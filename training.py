@@ -8,9 +8,7 @@ from models.gat import GATNet
 from models.gat_gcn import GAT_GCN
 from models.gcn import GCNNet
 from models.ginconv import GINConvNet
-from models.pd_ginconv import PD_GINConvNet
 from models.pdd_ginconv import PDD_GINConvNet
-from models.conv_ginconv import Conv_GINConvNet
 from models.vnoc_ginconv import Vnoc_GINConvNet
 from models.pdd_vnoc_ginconv import PDD_Vnoc_GINConvNet
 from models.esm_ginconv import ESM_GINConvNet
@@ -53,10 +51,9 @@ def predicting(model, device, loader):
 
 datasets = [['davis','kiba'][int(sys.argv[1])]] 
 modeling = [GINConvNet, GATNet, GAT_GCN, GCNNet,                                    # 0 - 3
-            PD_GINConvNet, PDD_GINConvNet,                                          # 4 - 5
-            Conv_GINConvNet, Vnoc_GINConvNet,                                       # 6 - 7
-            ESM_GINConvNet, FRI_GINConvNet,                                         # 8 - 9
-            PDD_Vnoc_GINConvNet][int(sys.argv[2])]                                  # 10             
+            PDD_GINConvNet, Vnoc_GINConvNet,                                        # 4 - 5
+            ESM_GINConvNet, FRI_GINConvNet,                                         # 6 - 7
+            PDD_Vnoc_GINConvNet][int(sys.argv[2])]                                  # 8
 model_st = modeling.__name__
 
 cuda_name = "cuda:0"
@@ -92,6 +89,7 @@ wandb.init(project = 'GraphDTA', config={"architecture": model_st, "dataset": da
 # Main program: iterate over different datasets
 for dataset in datasets:
     print('\nrunning on ', model_st + '_' + dataset )
+
     if model_st == "ESM_GINConvNet":
         processed_data_file_train = 'data/processed/' + dataset + '_esm_train.pt'
         processed_data_file_test = 'data/processed/' + dataset + '_esm_test.pt'
@@ -101,6 +99,7 @@ for dataset in datasets:
     else:
         processed_data_file_train = 'data/processed/' + dataset + '_train.pt'
         processed_data_file_test = 'data/processed/' + dataset + '_test.pt'
+
     if ((not os.path.isfile(processed_data_file_train)) or (not os.path.isfile(processed_data_file_test))):
         print('please run create_data.py to prepare data in pytorch format!')
     else:
@@ -139,10 +138,10 @@ for dataset in datasets:
                 best_mse = ret[1]
                 best_ci = ret[-1]
                 print('*****')
-                print('mse improved at epoch ', best_epoch, '; best_mse:', best_mse,model_st,dataset)
+                print('mse improved at epoch ', best_epoch, '; best_mse: ', best_mse,model_st,dataset)
                 print('*****')
             else:
-                print(ret[1], ' No improvement since epoch ', best_epoch, '; best_mse:', best_mse,model_st,dataset)
+                print(ret[1], ' No improvement since epoch ', best_epoch, '; best_mse: ', best_mse,model_st,dataset)
 
         model.load_state_dict(torch.load(model_file_name))
         G,P = predicting(model, device, test_loader)

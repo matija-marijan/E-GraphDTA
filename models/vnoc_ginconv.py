@@ -47,45 +47,37 @@ class Vnoc_GINConvNet(torch.nn.Module):
         self.fc1_xd = Linear(dim, output_dim)
 
         # 1D convolution on protein sequence
-
-        # ascending - 0.212, 0.891, ep 410 - OLD
         self.embedding_xt = nn.Embedding(num_features_xt + 1, embed_dim)
-        self.conv_xt_1 = nn.Conv1d(in_channels=embed_dim, out_channels=n_filters, kernel_size=64)
+        
+        # ascending - conv -> gmp -> linear
+        kernel_size = 64
+        stride = 1
+        self.conv_xt_1 = nn.Conv1d(in_channels=embed_dim, out_channels=n_filters, kernel_size=kernel_size, stride=stride)
         self.bn_xt1 = nn.BatchNorm1d(n_filters)
 
-        self.conv_xt_2 = nn.Conv1d(in_channels=n_filters, out_channels=2*n_filters, kernel_size=64)
+        self.conv_xt_2 = nn.Conv1d(in_channels=n_filters, out_channels=2*n_filters, kernel_size=kernel_size, stride=stride)
         self.bn_xt2 = nn.BatchNorm1d(2*n_filters)
 
-        self.conv_xt_3 = nn.Conv1d(in_channels=2*n_filters, out_channels=3*n_filters, kernel_size=64)
+        self.conv_xt_3 = nn.Conv1d(in_channels=2*n_filters, out_channels=3*n_filters, kernel_size=kernel_size, stride=stride)
         self.bn_xt3 = nn.BatchNorm1d(3*n_filters)
 
         self.gmp_xt = GlobalMaxPooling1D()
         self.fc1_xt = nn.Linear(3 * n_filters, output_dim)
         self.bn_fc1 = nn.BatchNorm1d(output_dim)
 
-        # ascending - 0.212, 0.891, ep 410 - NEW
-        # self.embedding_xt = nn.Embedding(num_features_xt + 1, embed_dim)
-        # self.conv_xt_1 = nn.Conv1d(in_channels=embed_dim, out_channels=n_filters, kernel_size=64)
-        # self.bn_xt1 = nn.BatchNorm1d(n_filters)
-
-        # self.conv_xt_2 = nn.Conv1d(in_channels=n_filters, out_channels=2*n_filters, kernel_size=64)
-        # self.bn_xt2 = nn.BatchNorm1d(2*n_filters)
-
+        # ascending - conv -> gmp
         # self.conv_xt_3 = nn.Conv1d(in_channels=2*n_filters, out_channels=output_dim, kernel_size=64)
         # self.bn_xt3 = nn.BatchNorm1d(output_dim)
-
         # self.gmp_xt = GlobalMaxPooling1D()
 
         # descending - 0.216, 0.890, ep 493
-        # self.embedding_xt = nn.Embedding(num_features_xt + 1, embed_dim)
         # self.conv_xt_1 = nn.Conv1d(in_channels=embed_dim, out_channels= 3 * n_filters, kernel_size=64)
         # self.conv_xt_2 = nn.Conv1d(in_channels= 3 * n_filters, out_channels= 2 * n_filters, kernel_size=64)
         # self.conv_xt_3 = nn.Conv1d(in_channels= 2 * n_filters, out_channels= 1 * n_filters, kernel_size=64)
         # self.gmp_xt = GlobalMaxPooling1D()
         # self.fc1_xt = nn.Linear(1 * n_filters, output_dim)       
         
-        # constant - spearman constant list warning, gradient explosion?
-        # self.embedding_xt = nn.Embedding(num_features_xt + 1, embed_dim)
+        # constant - gradient explosion
         # self.conv_xt_1 = nn.Conv1d(in_channels=embed_dim, out_channels= 4 * n_filters, kernel_size=64)
         # self.conv_xt_2 = nn.Conv1d(in_channels=embed_dim, out_channels= 4 * n_filters, kernel_size=64)
         # self.conv_xt_3 = nn.Conv1d(in_channels=embed_dim, out_channels= 4 * n_filters, kernel_size=64)
@@ -135,7 +127,7 @@ class Vnoc_GINConvNet(torch.nn.Module):
         # flatten
         # xt = xt.view(-1, 96 * 811)
 
-        # linear - OLD
+        # linear
         xt = self.fc1_xt(xt)
         xt = self.bn_fc1(xt)
         xt = self.relu(xt)

@@ -8,6 +8,13 @@ from models.gat import GATNet
 from models.gat_gcn import GAT_GCN
 from models.gcn import GCNNet
 from models.ginconv import GINConvNet
+from models.pdd_ginconv import PDD_GINConvNet
+from models.vnoc_ginconv import Vnoc_GINConvNet
+from models.pdd_vnoc_ginconv import PDD_Vnoc_GINConvNet
+from models.esm_ginconv import ESM_GINConvNet
+from models.fri_ginconv import FRI_GINConvNet
+import wandb
+import random
 from utils import *
 
 # training function at each epoch
@@ -27,7 +34,7 @@ def train(model, device, train_loader, optimizer, epoch):
                                                                            len(train_loader.dataset),
                                                                            100. * batch_idx / len(train_loader),
                                                                            loss.item()))
-
+    wandb.log({"loss": loss.item()}, commit=False)
 def predicting(model, device, loader):
     model.eval()
     total_preds = torch.Tensor()
@@ -43,13 +50,30 @@ def predicting(model, device, loader):
 
 
 datasets = [['davis','kiba'][int(sys.argv[1])]] 
-modeling = [GINConvNet, GATNet, GAT_GCN, GCNNet][int(sys.argv[2])]
+modeling = [GINConvNet, GATNet, GAT_GCN, GCNNet,                                    # 0 - 3
+            PDD_GINConvNet, Vnoc_GINConvNet,                                        # 4 - 5
+            ESM_GINConvNet, FRI_GINConvNet,                                         # 6 - 7
+            PDD_Vnoc_GINConvNet][int(sys.argv[2])]                                  # 8
 model_st = modeling.__name__
 
 cuda_name = "cuda:0"
 if len(sys.argv)>3:
-    cuda_name = ["cuda:0","cuda:1"][int(sys.argv[3])]
+    cuda_name = "cuda:" + str(int(sys.argv[3])) 
 print('cuda_name:', cuda_name)
+
+# Set seed:
+if len(sys.argv)>4:
+    seed = int(sys.argv[4])
+    print("Seed: " + str(seed))
+    os.environ["CUBLAS_WORKSPACE_CONFIG"]=":4096:8"
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+    torch.use_deterministic_algorithms(True)
 
 TRAIN_BATCH_SIZE = 512
 TEST_BATCH_SIZE = 512
@@ -60,22 +84,38 @@ NUM_EPOCHS = 1000
 print('Learning rate: ', LR)
 print('Epochs: ', NUM_EPOCHS)
 
+wandb.init(project = 'GraphDTA - Validation', config={"architecture": model_st, "dataset": datasets[0]})
+
 # Main program: iterate over different datasets
 for dataset in datasets:
     print('\nrunning on ', model_st + '_' + dataset )
-    processed_data_file_train = 'data/processed/' + dataset + '_train.pt'
-    processed_data_file_test = 'data/processed/' + dataset + '_test.pt'
+
+    if model_st == "ESM_GINConvNet":
+        processed_data_file_train = 'data/processed/' + dataset + '_esm_train.pt'
+        processed_data_file_test = 'data/processed/' + dataset + '_esm_test.pt'
+    elif model_st == "FRI_GINConvNet":
+        processed_data_file_train = 'data/processed/' + dataset + '_deepfri_train.pt'
+        processed_data_file_test = 'data/processed/' + dataset + '_deepfri_test.pt'
+    else:
+        processed_data_file_train = 'data/processed/' + dataset + '_train.pt'
+        processed_data_file_test = 'data/processed/' + dataset + '_test.pt'
+    
     if ((not os.path.isfile(processed_data_file_train)) or (not os.path.isfile(processed_data_file_test))):
         print('please run create_data.py to prepare data in pytorch format!')
     else:
-        train_data = TestbedDataset(root='data', dataset=dataset+'_train')
-        test_data = TestbedDataset(root='data', dataset=dataset+'_test')
-        
+        if model_st == "ESM_GINConvNet":
+            train_data = ESM_TestbedDataset(root='data', dataset=dataset+'_esm_train')
+            test_data = ESM_TestbedDataset(root='data', dataset=dataset+'_esm_test')
+        elif model_st == "FRI_GINConvNet":
+            train_data = ESM_TestbedDataset(root='data', dataset=dataset+'_deepfri_train')
+            test_data = ESM_TestbedDataset(root='data', dataset=dataset+'_deepfri_test')
+        else:
+            train_data = TestbedDataset(root='data', dataset=dataset+'_train')
+            test_data = TestbedDataset(root='data', dataset=dataset+'_test')
         
         train_size = int(0.8 * len(train_data))
         valid_size = len(train_data) - train_size
         train_data, valid_data = torch.utils.data.random_split(train_data, [train_size, valid_size])        
-        
         
         # make data PyTorch mini-batch processing ready
         train_loader = DataLoader(train_data, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
@@ -91,8 +131,8 @@ for dataset in datasets:
         best_test_mse = 1000
         best_test_ci = 0
         best_epoch = -1
-        model_file_name = 'model_' + model_st + '_' + dataset +  '.model'
-        result_file_name = 'result_' + model_st + '_' + dataset +  '.csv'
+        model_file_name = 'results/validation_model_' + model_st + '_' + dataset +  '.model'
+        result_file_name = 'results/validation_result_' + model_st + '_' + dataset +  '.csv'
         for epoch in range(NUM_EPOCHS):
             train(model, device, train_loader, optimizer, epoch+1)
             print('predicting for valid data')
@@ -104,12 +144,31 @@ for dataset in datasets:
                 torch.save(model.state_dict(), model_file_name)
                 print('predicting for test data')
                 G,P = predicting(model, device, test_loader)
-                ret = [rmse(G,P),mse(G,P),pearson(G,P),spearman(G,P),ci(G,P)]
+                ret = [rmse(G,P),mse(G,P),pearson(G,P),spearman(G,P)]
+                wandb.log({"val_mse": val, "rmse": ret[0], "mse": ret[1], "pearson": ret[2], "spearman": ret[3]})
                 with open(result_file_name,'w') as f:
                     f.write(','.join(map(str,ret)))
                 best_test_mse = ret[1]
                 best_test_ci = ret[-1]
-                print('rmse improved at epoch ', best_epoch, '; best_test_mse,best_test_ci:', best_test_mse,best_test_ci,model_st,dataset)
+                print('*****')
+                print('mse improved at epoch ', best_epoch, '; best_test_mse: ', best_test_mse,model_st,dataset)
+                print('*****')
             else:
-                print(ret[1],'No improvement since epoch ', best_epoch, '; best_test_mse,best_test_ci:', best_test_mse,best_test_ci,model_st,dataset)
+                wandb.log({"val_mse": val})
+                print(ret[1],'No improvement since epoch ', best_epoch, '; best_test_mse: ', best_test_mse,model_st,dataset)
 
+        model.load_state_dict(torch.load(model_file_name))
+        G,P = predicting(model, device, test_loader)
+        ret = [rmse(G,P),mse(G,P),pearson(G,P),spearman(G,P),ci(G,P)]
+
+        with open(result_file_name,'w') as f:
+            f.write(','.join(map(str,ret)))        
+        print('best model metrics: ')
+        print('rmse = ', ret[0])
+        print('mse = ', ret[1])
+        print('pearson = ', ret[2])
+        print('spearman = ', ret[3])
+        print('ci = ', ret[4])
+        wandb.log({"ci": ret[4]})
+
+wandb.finish()
