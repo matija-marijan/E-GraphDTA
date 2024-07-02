@@ -10,7 +10,10 @@
 data/*
 wandb/*
 other/*
-results/*
+results/old
+results/validation*
 *.pt
 __pycache__/
 models/other
+multiple_training.sh
+multiple_validation.sh

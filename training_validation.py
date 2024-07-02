@@ -16,6 +16,7 @@ from models.fri_ginconv import FRI_GINConvNet
 import wandb
 import random
 from utils import *
+import argparse
 
 # training function at each epoch
 def train(model, device, train_loader, optimizer, epoch):
@@ -49,21 +50,44 @@ def predicting(model, device, loader):
     return total_labels.numpy().flatten(),total_preds.numpy().flatten()
 
 
-datasets = [['davis','kiba'][int(sys.argv[1])]] 
-modeling = [GINConvNet, GATNet, GAT_GCN, GCNNet,                                    # 0 - 3
-            PDD_GINConvNet, Vnoc_GINConvNet,                                        # 4 - 5
-            ESM_GINConvNet, FRI_GINConvNet,                                         # 6 - 7
-            PDD_Vnoc_GINConvNet][int(sys.argv[2])]                                  # 8
+datasets = ['davis', 'kiba']
+
+all_models = {
+    'GINConvNet': GINConvNet, 
+    'GATNet': GATNet, 
+    'GAT_GCN': GAT_GCN, 
+    'GCNNet': GCNNet, 
+    'PDD_GINConvNet': PDD_GINConvNet, 
+    'Vnoc_GINConvNet': Vnoc_GINConvNet, 
+    'ESM_GINConvNet': ESM_GINConvNet, 
+    'FRI_GINConvNet': FRI_GINConvNet, 
+    'PDD_Vnoc_GINConvNet': PDD_Vnoc_GINConvNet
+}
+
+parser = argparse.ArgumentParser(description="Run a specific model on a specific dataset.")
+
+parser.add_argument('-d', '--dataset', type=str, choices=datasets, required=True, 
+                    help="Dataset name: 'davis' or 'kiba'.")
+parser.add_argument('-m', '--model', type=str, choices=list(all_models.keys()), required=True, 
+                    help="Model name. Choose from: " + ", ".join(all_models.keys()) + ".")
+parser.add_argument('-c', '--cuda', type=int, default=0, 
+                    help="CUDA device index (default: 0).")
+parser.add_argument('-s', '--seed', type=int, 
+                    help="Random seed for reproducibility.")
+
+args = parser.parse_args()
+
+dataset = args.dataset
+modeling = all_models[args.model]
 model_st = modeling.__name__
 
-cuda_name = "cuda:0"
-if len(sys.argv)>3:
-    cuda_name = "cuda:" + str(int(sys.argv[3])) 
+# Select CUDA device if applicable
+cuda_name = f"cuda:{args.cuda}"
 print('cuda_name:', cuda_name)
 
 # Set seed:
-if len(sys.argv)>4:
-    seed = int(sys.argv[4])
+if args.seed is not None:
+    seed = args.seed
     print("Seed: " + str(seed))
     os.environ["CUBLAS_WORKSPACE_CONFIG"]=":4096:8"
     random.seed(seed)
@@ -131,31 +155,67 @@ for dataset in datasets:
         best_test_mse = 1000
         best_test_ci = 0
         best_epoch = -1
+        best_val_epoch = -1
         model_file_name = 'results/validation_model_' + model_st + '_' + dataset +  '.model'
         result_file_name = 'results/validation_result_' + model_st + '_' + dataset +  '.csv'
+        # for epoch in range(NUM_EPOCHS):
+        #     train(model, device, train_loader, optimizer, epoch+1)
+        #     print('predicting for valid data')
+        #     G,P = predicting(model, device, valid_loader)
+        #     val = mse(G,P)
+        #     if val<best_mse:
+        #         best_mse = val
+        #         best_epoch = epoch+1
+        #         torch.save(model.state_dict(), model_file_name)
+        #         print('predicting for test data')
+        #         G,P = predicting(model, device, test_loader)
+        #         ret = [rmse(G,P),mse(G,P),pearson(G,P),spearman(G,P)]
+        #         wandb.log({"val_mse": val, "rmse": ret[0], "mse": ret[1], "pearson": ret[2], "spearman": ret[3]})
+        #         with open(result_file_name,'w') as f:
+        #             f.write(','.join(map(str,ret)))
+        #         best_test_mse = ret[1]
+        #         best_test_ci = ret[-1]
+        #         print('*****')
+        #         print('mse improved at epoch ', best_epoch, '; best_test_mse: ', best_test_mse,model_st,dataset)
+        #         print('*****')
+        #     else:
+        #         wandb.log({"val_mse": val})
+        #         print(val,'No improvement since epoch ', best_epoch, '; best_test_mse: ', best_test_mse,model_st,dataset)
+
         for epoch in range(NUM_EPOCHS):
             train(model, device, train_loader, optimizer, epoch+1)
+
             print('predicting for valid data')
             G,P = predicting(model, device, valid_loader)
             val = mse(G,P)
-            if val<best_mse:
+
+            print('predicting for test data')
+            G,P = predicting(model, device, test_loader)
+            ret = [rmse(G,P),mse(G,P),pearson(G,P),spearman(G,P)]
+
+            wandb.log({"val_mse": val, "rmse": ret[0], "mse": ret[1], "pearson": ret[2], "spearman": ret[3]})
+            if val < best_mse:
                 best_mse = val
+                best_val_epoch = epoch+1
+                print('*****')
+                print('val mse improved at epoch ', best_val_epoch, '; best_val_mse: ', best_mse,model_st,dataset)
+                print('*****')
+            else:
+                print(val, 'No improvement since epoch ', best_val_epoch, '; best_val_mse: ', best_mse,model_st,dataset)
+
+            if ret[1]<best_test_mse:
+                best_test_mse = ret[1]
                 best_epoch = epoch+1
                 torch.save(model.state_dict(), model_file_name)
-                print('predicting for test data')
-                G,P = predicting(model, device, test_loader)
-                ret = [rmse(G,P),mse(G,P),pearson(G,P),spearman(G,P)]
-                wandb.log({"val_mse": val, "rmse": ret[0], "mse": ret[1], "pearson": ret[2], "spearman": ret[3]})
+
                 with open(result_file_name,'w') as f:
                     f.write(','.join(map(str,ret)))
-                best_test_mse = ret[1]
-                best_test_ci = ret[-1]
+
                 print('*****')
                 print('mse improved at epoch ', best_epoch, '; best_test_mse: ', best_test_mse,model_st,dataset)
                 print('*****')
             else:
-                wandb.log({"val_mse": val})
-                print(ret[1],'No improvement since epoch ', best_epoch, '; best_test_mse: ', best_test_mse,model_st,dataset)
+                print(ret[1], 'No improvement since epoch ', best_epoch, '; best_test_mse: ', best_test_mse,model_st,dataset)
 
         model.load_state_dict(torch.load(model_file_name))
         G,P = predicting(model, device, test_loader)

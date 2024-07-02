@@ -16,6 +16,7 @@ from models.fri_ginconv import FRI_GINConvNet
 import wandb
 import random
 from utils import *
+import argparse
 
 # training function at each epoch
 def train(model, device, train_loader, optimizer, epoch):
@@ -48,22 +49,44 @@ def predicting(model, device, loader):
             total_labels = torch.cat((total_labels, data.y.view(-1, 1).cpu()), 0)
     return total_labels.numpy().flatten(),total_preds.numpy().flatten()
 
+datasets = ['davis', 'kiba']
 
-datasets = [['davis','kiba'][int(sys.argv[1])]] 
-modeling = [GINConvNet, GATNet, GAT_GCN, GCNNet,                                    # 0 - 3
-            PDD_GINConvNet, Vnoc_GINConvNet,                                        # 4 - 5
-            ESM_GINConvNet, FRI_GINConvNet,                                         # 6 - 7
-            PDD_Vnoc_GINConvNet][int(sys.argv[2])]                                  # 8
+all_models = {
+    'GINConvNet': GINConvNet, 
+    'GATNet': GATNet, 
+    'GAT_GCN': GAT_GCN, 
+    'GCNNet': GCNNet, 
+    'PDD_GINConvNet': PDD_GINConvNet, 
+    'Vnoc_GINConvNet': Vnoc_GINConvNet, 
+    'ESM_GINConvNet': ESM_GINConvNet, 
+    'FRI_GINConvNet': FRI_GINConvNet, 
+    'PDD_Vnoc_GINConvNet': PDD_Vnoc_GINConvNet
+}
+
+parser = argparse.ArgumentParser(description="Run a specific model on a specific dataset.")
+
+parser.add_argument('-d', '--dataset', type=str, choices=datasets, required=True, 
+                    help="Dataset name: 'davis' or 'kiba'.")
+parser.add_argument('-m', '--model', type=str, choices=list(all_models.keys()), required=True, 
+                    help="Model name. Choose from: " + ", ".join(all_models.keys()) + ".")
+parser.add_argument('-c', '--cuda', type=int, default=0, 
+                    help="CUDA device index (default: 0).")
+parser.add_argument('-s', '--seed', type=int, 
+                    help="Random seed for reproducibility.")
+
+args = parser.parse_args()
+
+dataset = args.dataset
+modeling = all_models[args.model]
 model_st = modeling.__name__
 
-cuda_name = "cuda:0"
-if len(sys.argv)>3:
-    cuda_name = "cuda:" + str(int(sys.argv[3])) 
+# Select CUDA device if applicable
+cuda_name = f"cuda:{args.cuda}"
 print('cuda_name:', cuda_name)
 
 # Set seed:
-if len(sys.argv)>4:
-    seed = int(sys.argv[4])
+if args.seed is not None:
+    seed = args.seed
     print("Seed: " + str(seed))
     os.environ["CUBLAS_WORKSPACE_CONFIG"]=":4096:8"
     random.seed(seed)
@@ -123,7 +146,6 @@ for dataset in datasets:
         loss_fn = nn.MSELoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=LR)
         best_mse = 1000
-        best_ci = 0
         best_epoch = -1
         model_file_name = 'results/training_model_' + model_st + '_' + dataset +  '.model'
         result_file_name = 'results/training_result_' + model_st + '_' + dataset +  '.csv'
@@ -136,7 +158,6 @@ for dataset in datasets:
                 torch.save(model.state_dict(), model_file_name)
                 best_epoch = epoch+1
                 best_mse = ret[1]
-                best_ci = ret[-1]
                 print('*****')
                 print('mse improved at epoch ', best_epoch, '; best_mse: ', best_mse,model_st,dataset)
                 print('*****')
