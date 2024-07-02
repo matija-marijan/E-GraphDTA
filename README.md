@@ -1,4 +1,7 @@
-# Resources:
+# P-GraphDTA (Working title)
+Implementation of different protein representations into GraphDTA.
+
+## Resources:
 
 + README.md: this file.
 + data/davis/folds/test_fold_setting1.txt,train_fold_setting1.txt; data/davis/Y,ligands_can.txt,proteins.txt
