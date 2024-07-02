@@ -1,0 +1,155 @@
+import torch
+from torch.utils.data import ConcatDataset
+import argparse
+from utils import *
+import matplotlib.pyplot as plt
+
+from models.gat import GATNet
+from models.gat_gcn import GAT_GCN
+from models.gcn import GCNNet
+from models.ginconv import GINConvNet
+from models.pdd_ginconv import PDD_GINConvNet
+from models.vnoc_ginconv import Vnoc_GINConvNet
+from models.pdd_vnoc_ginconv import PDD_Vnoc_GINConvNet
+from models.esm_ginconv import ESM_GINConvNet
+from models.fri_ginconv import FRI_GINConvNet
+
+def predicting(model, device, loader):
+    model.eval()
+    total_preds = torch.Tensor()
+    total_labels = torch.Tensor()
+    print('Make prediction for {} samples...'.format(len(loader.dataset)))
+    with torch.no_grad():
+        for data in loader:
+            data = data.to(device)
+            output = model(data)
+            total_preds = torch.cat((total_preds, output.cpu()), 0)
+            total_labels = torch.cat((total_labels, data.y.view(-1, 1).cpu()), 0)
+    return total_labels.numpy().flatten(),total_preds.numpy().flatten()
+
+def plot_histograms(labels, predictions):
+    G = labels
+    P = predictions
+    xmin = min(G.min(), P.min())
+    xmax = max(G.max(), P.max())
+
+    # Define specific bin edges based on combined min and max
+    bin_edges = np.linspace(xmin, xmax, 50)
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+
+    # Histogram for labels
+    ax1.hist(G, bins=bin_edges)
+    ax1.set_xlabel('Label value - G')
+    ax1.set_ylabel('Bin count')
+    ax1.grid(True)
+
+    # Histogram for predictions
+    ax2.hist(P, bins=bin_edges)
+    ax2.set_xlabel('Prediction value - P')
+    ax2.set_ylabel('Bin count')
+    ax2.grid(True)
+
+    # Set the same axis range for both subplots
+    ymin = 0
+    ymax = max(ax1.get_ylim()[1], ax2.get_ylim()[1])
+
+    ax1.set_xlim([xmin, xmax])
+    ax1.set_ylim([ymin, ymax])
+    ax2.set_xlim([xmin, xmax])
+    ax2.set_ylim([ymin, ymax])
+
+    # Title for the entire figure
+    fig.suptitle('Histogram of predictions and labels')
+
+    plt.show()
+
+datasets = ['davis', 'kiba']
+
+all_models = {
+    'GINConvNet': GINConvNet, 
+    'GATNet': GATNet, 
+    'GAT_GCN': GAT_GCN, 
+    'GCNNet': GCNNet, 
+    'PDD_GINConvNet': PDD_GINConvNet, 
+    'Vnoc_GINConvNet': Vnoc_GINConvNet, 
+    'ESM_GINConvNet': ESM_GINConvNet, 
+    'FRI_GINConvNet': FRI_GINConvNet, 
+    'PDD_Vnoc_GINConvNet': PDD_Vnoc_GINConvNet
+}
+
+parser = argparse.ArgumentParser(description="Run a specific model on a specific dataset.")
+
+parser.add_argument('-d', '--dataset', type=str, choices=datasets, required=True, 
+                    help="Dataset name: 'davis' or 'kiba'.")
+parser.add_argument('-m', '--model', type=str, choices=list(all_models.keys()), required=True, 
+                    help="Model name. Choose from: " + ", ".join(all_models.keys()) + ".")
+parser.add_argument('-c', '--cuda', type=int, default=0, 
+                    help="CUDA device index (default: 0).")
+
+args = parser.parse_args()
+
+dataset = args.dataset
+modeling = all_models[args.model]
+model_st = modeling.__name__
+
+# Select CUDA device if applicable
+cuda_name = f"cuda:{args.cuda}"
+print('cuda_name:', cuda_name)
+device = torch.device(cuda_name if torch.cuda.is_available() else "cpu")
+
+# Dodati mogucnost dodavanja argumenta za model_path!
+model_path = 'results/final_training_model_' + model_st + '_' + dataset + '.model'
+
+BATCH_SIZE = 512
+
+if __name__ == "__main__":
+    print('\nrunning on ', model_st + '_' + dataset )
+
+    if model_st == "ESM_GINConvNet":
+        processed_data_file_train = 'data/processed/' + dataset + '_esm_train.pt'
+        processed_data_file_test = 'data/processed/' + dataset + '_esm_test.pt'
+    elif model_st == "FRI_GINConvNet":
+        processed_data_file_train = 'data/processed/' + dataset + '_deepfri_train.pt'
+        processed_data_file_test = 'data/processed/' + dataset + '_deepfri_test.pt'
+    else:
+        processed_data_file_train = 'data/processed/' + dataset + '_train.pt'
+        processed_data_file_test = 'data/processed/' + dataset + '_test.pt'
+
+    if ((not os.path.isfile(processed_data_file_train)) or (not os.path.isfile(processed_data_file_test))):
+        print('please run create_data.py to prepare data in pytorch format!')
+    else:
+        if model_st == "ESM_GINConvNet":
+            train_data = ESM_TestbedDataset(root='data', dataset=dataset+'_esm_train')
+            test_data = ESM_TestbedDataset(root='data', dataset=dataset+'_esm_test')
+        elif model_st == "FRI_GINConvNet":
+            train_data = ESM_TestbedDataset(root='data', dataset=dataset+'_deepfri_train')
+            test_data = ESM_TestbedDataset(root='data', dataset=dataset+'_deepfri_test')
+        else:
+            train_data = TestbedDataset(root='data', dataset=dataset+'_train')
+            test_data = TestbedDataset(root='data', dataset=dataset+'_test')
+
+    train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=False)
+    test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False)
+
+    combined_data = ConcatDataset([train_data, test_data])
+    combined_loader = DataLoader(combined_data, batch_size=BATCH_SIZE, shuffle=False)
+
+    # Load pre-trained model
+    model = modeling().to(device)
+    model.load_state_dict(torch.load(model_path))
+
+    # Predict for combined dataset
+    G, P = predicting(model, device, combined_loader)
+    
+    plot_histograms(G, P)
+
+# TO-DO:
+# load model - done
+# load dataset - done (implicitly?)
+# predict(dataset) - done (for combined data only!)
+# Optional: histogram, output analysis (confusion matrix?)
+# Optional: number of parameters, inference time?
+# extract embeddings!!! (keract?)
+# find out which embedding corresponds to which protein!
+# save embeddings to davis_442x128.csv and kiba_223x128.csv
