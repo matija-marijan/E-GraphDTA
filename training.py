@@ -109,8 +109,8 @@ print('Epochs: ', NUM_EPOCHS)
 
 wandb.init(project = 'GraphDTA', config={"architecture": model_st, "dataset": datasets[0]})
 
-# Main program: iterate over different datasets
-for dataset in datasets:
+# Main program: Train on specified dataset
+if __name__ == "__main__":
     print('\nrunning on ', model_st + '_' + dataset )
 
     if model_st == "ESM_GINConvNet":
