@@ -27,14 +27,14 @@ def predicting(model, device, loader):
             total_labels = torch.cat((total_labels, data.y.view(-1, 1).cpu()), 0)
     return total_labels.numpy().flatten(),total_preds.numpy().flatten()
 
-def plot_histograms(labels, predictions):
+def plot_histograms(labels, predictions, bin_count = 50):
     G = labels
     P = predictions
     xmin = min(G.min(), P.min())
     xmax = max(G.max(), P.max())
 
     # Define specific bin edges based on combined min and max
-    bin_edges = np.linspace(xmin, xmax, 50)
+    bin_edges = np.linspace(np.floor(xmin), np.ceil(xmax), bin_count)
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
 

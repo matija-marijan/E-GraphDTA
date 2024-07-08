@@ -73,6 +73,7 @@ parser.add_argument('-c', '--cuda', type=int, default=0,
                     help="CUDA device index (default: 0).")
 parser.add_argument('-s', '--seed', type=int, 
                     help="Random seed for reproducibility.")
+#parser add argument protein flags
 
 args = parser.parse_args()
 
