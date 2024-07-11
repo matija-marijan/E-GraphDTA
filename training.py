@@ -13,6 +13,14 @@ from models.vnoc_ginconv import Vnoc_GINConvNet
 from models.pdd_vnoc_ginconv import PDD_Vnoc_GINConvNet
 from models.esm_ginconv import ESM_GINConvNet
 from models.fri_ginconv import FRI_GINConvNet
+
+from models.flag.flag_ginconv import Flag_GINConvNet
+from models.flag.flag_pdd_ginconv import Flag_PDD_GINConvNet
+from models.flag.flag_vnoc_ginconv import Flag_Vnoc_GINConvNet
+from models.flag.flag_pdd_vnoc_ginconv import Flag_PDD_Vnoc_GINConvNet
+from models.flag.flag_esm_ginconv import Flag_ESM_GINConvNet
+from models.flag.flag_fri_ginconv import Flag_FRI_GINConvNet
+
 import wandb
 import random
 from utils import *
@@ -63,6 +71,15 @@ all_models = {
     'PDD_Vnoc_GINConvNet': PDD_Vnoc_GINConvNet
 }
 
+flag_models = {
+    'Flag_GINConvNet': Flag_GINConvNet, 
+    'Flag_PDD_GINConvNet': Flag_PDD_GINConvNet, 
+    'Flag_Vnoc_GINConvNet': Flag_Vnoc_GINConvNet, 
+    'Flag_ESM_GINConvNet': Flag_ESM_GINConvNet, 
+    'Flag_FRI_GINConvNet': Flag_FRI_GINConvNet, 
+    'Flag_PDD_Vnoc_GINConvNet': Flag_PDD_Vnoc_GINConvNet
+}
+
 parser = argparse.ArgumentParser(description="Run a specific model on a specific dataset.")
 
 parser.add_argument('-d', '--dataset', type=str, choices=datasets, required=True, 
@@ -73,13 +90,38 @@ parser.add_argument('-c', '--cuda', type=int, default=0,
                     help="CUDA device index (default: 0).")
 parser.add_argument('-s', '--seed', type=int, 
                     help="Random seed for reproducibility.")
-#parser add argument protein flags
+# parser.add_argument('-f', '--flag', type=int, default = 0, 
+#                     help="Boolean flag for including phosphorylation protein flags (default: 0).")
+parser.add_argument('-x', '--mutation', type=int, default = 0, choices = {0, 1, 2},
+                    help="Flag for including protein sequence mutations (1), and protein phosphorylation flags (2) (default: 0).")
 
 args = parser.parse_args()
 
-dataset = args.dataset
+# if args.flag != 0:
+#     flag = '_flag'
+#     modeling = flag_models['Flag_' + args.model]
+#     model_st = modeling.__name__
+# else:
+#     flag = ''
+#     modeling = all_models[args.model]
+#     model_st = modeling.__name__
+# print(f"Flagged proteins = {args.flag}")
+
 modeling = all_models[args.model]
 model_st = modeling.__name__
+
+if args.mutation == 0:
+    mutation = ''
+elif args.mutation == 1:
+    mutation = '_mutation'
+elif args.mutation == 2:
+    mutation = '_flag'
+    modeling = flag_models['Flag_' + args.model]
+    model_st = modeling.__name__
+    
+print(f"Mutation = {args.mutation}")
+
+dataset = args.dataset
 
 # Select CUDA device if applicable
 cuda_name = f"cuda:{args.cuda}"
@@ -108,34 +150,34 @@ NUM_EPOCHS = 1000
 print('Learning rate: ', LR)
 print('Epochs: ', NUM_EPOCHS)
 
-wandb.init(project = 'GraphDTA', config={"architecture": model_st, "dataset": datasets[0]})
+wandb.init(project = 'GraphDTA', config={"architecture": model_st, "dataset": datasets[0], "mutation": args.mutation})
 
 # Main program: Train on specified dataset
 if __name__ == "__main__":
     print('\nrunning on ', model_st + '_' + dataset )
 
     if model_st == "ESM_GINConvNet":
-        processed_data_file_train = 'data/processed/' + dataset + '_esm_train.pt'
-        processed_data_file_test = 'data/processed/' + dataset + '_esm_test.pt'
+        processed_data_file_train = 'data/processed/' + dataset + mutation + '_esm_train.pt'
+        processed_data_file_test = 'data/processed/' + dataset + mutation + '_esm_test.pt'
     elif model_st == "FRI_GINConvNet":
-        processed_data_file_train = 'data/processed/' + dataset + '_deepfri_train.pt'
-        processed_data_file_test = 'data/processed/' + dataset + '_deepfri_test.pt'
+        processed_data_file_train = 'data/processed/' + dataset + mutation + '_deepfri_train.pt'
+        processed_data_file_test = 'data/processed/' + dataset + mutation + '_deepfri_test.pt'
     else:
-        processed_data_file_train = 'data/processed/' + dataset + '_train.pt'
-        processed_data_file_test = 'data/processed/' + dataset + '_test.pt'
+        processed_data_file_train = 'data/processed/' + dataset + mutation + '_train.pt'
+        processed_data_file_test = 'data/processed/' + dataset + mutation + '_test.pt'
 
     if ((not os.path.isfile(processed_data_file_train)) or (not os.path.isfile(processed_data_file_test))):
         print('please run create_data.py to prepare data in pytorch format!')
     else:
         if model_st == "ESM_GINConvNet":
-            train_data = ESM_TestbedDataset(root='data', dataset=dataset+'_esm_train')
-            test_data = ESM_TestbedDataset(root='data', dataset=dataset+'_esm_test')
+            train_data = TestbedDataset(root='data', dataset=dataset+ mutation +'_esm_train')
+            test_data = TestbedDataset(root='data', dataset=dataset+ mutation +'_esm_test')
         elif model_st == "FRI_GINConvNet":
-            train_data = ESM_TestbedDataset(root='data', dataset=dataset+'_deepfri_train')
-            test_data = ESM_TestbedDataset(root='data', dataset=dataset+'_deepfri_test')
+            train_data = ESM_TestbedDataset(root='data', dataset=dataset+ mutation +'_deepfri_train')
+            test_data = ESM_TestbedDataset(root='data', dataset=dataset+ mutation +'_deepfri_test')
         else:
-            train_data = TestbedDataset(root='data', dataset=dataset+'_train')
-            test_data = TestbedDataset(root='data', dataset=dataset+'_test')
+            train_data = TestbedDataset(root='data', dataset=dataset+ mutation +'_train')
+            test_data = TestbedDataset(root='data', dataset=dataset+ mutation +'_test')
 
         # make data PyTorch mini-batch processing ready
         train_loader = DataLoader(train_data, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
