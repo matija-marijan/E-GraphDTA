@@ -110,18 +110,19 @@ args = parser.parse_args()
 modeling = all_models[args.model]
 model_st = modeling.__name__
 
-if args.mutation == 0:
-    mutation = ''
-elif args.mutation == 1:
-    mutation = '_mutation'
-elif args.mutation == 2:
-    mutation = '_flag'
-    modeling = flag_models['Flag_' + args.model]
-    model_st = modeling.__name__
+dataset = args.dataset
+
+if dataset == 'davis':
+    if args.mutation == 0:
+        mutation = ''
+    elif args.mutation == 1:
+        mutation = '_mutation'
+    elif args.mutation == 2:
+        mutation = '_flag'
+        modeling = flag_models['Flag_' + args.model]
+        model_st = modeling.__name__
     
 print(f"Mutation = {args.mutation}")
-
-dataset = args.dataset
 
 # Select CUDA device if applicable
 cuda_name = f"cuda:{args.cuda}"
