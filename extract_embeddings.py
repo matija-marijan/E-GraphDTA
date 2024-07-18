@@ -22,56 +22,6 @@ from models.flag.flag_pdd_vnoc_ginconv import Flag_PDD_Vnoc_GINConvNet
 from models.flag.flag_esm_ginconv import Flag_ESM_GINConvNet
 from models.flag.flag_fri_ginconv import Flag_FRI_GINConvNet
 
-def predicting(model, device, loader):
-    model.eval()
-    total_preds = torch.Tensor()
-    total_labels = torch.Tensor()
-    print('Make prediction for {} samples...'.format(len(loader.dataset)))
-    with torch.no_grad():
-        for data in loader:
-            data = data.to(device)
-            output = model(data)
-            total_preds = torch.cat((total_preds, output.cpu()), 0)
-            total_labels = torch.cat((total_labels, data.y.view(-1, 1).cpu()), 0)
-    return total_labels.numpy().flatten(),total_preds.numpy().flatten()
-
-def plot_histograms(labels, predictions, bin_count = 50):
-    G = labels
-    P = predictions
-    xmin = min(G.min(), P.min())
-    xmax = max(G.max(), P.max())
-
-    # Define specific bin edges based on combined min and max
-    bin_edges = np.linspace(np.floor(xmin), np.ceil(xmax), bin_count)
-
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-
-    # Histogram for labels
-    ax1.hist(G, bins=bin_edges)
-    ax1.set_xlabel('Label value - G')
-    ax1.set_ylabel('Bin count')
-    ax1.grid(True)
-
-    # Histogram for predictions
-    ax2.hist(P, bins=bin_edges)
-    ax2.set_xlabel('Prediction value - P')
-    ax2.set_ylabel('Bin count')
-    ax2.grid(True)
-
-    # Set the same axis range for both subplots
-    ymin = 0
-    ymax = max(ax1.get_ylim()[1], ax2.get_ylim()[1])
-
-    ax1.set_xlim([xmin, xmax])
-    ax1.set_ylim([ymin, ymax])
-    ax2.set_xlim([xmin, xmax])
-    ax2.set_ylim([ymin, ymax])
-
-    # Title for the entire figure
-    fig.suptitle('Histogram of predictions and labels')
-
-    plt.show()
-
 datasets = ['davis', 'kiba']
 
 all_models = {
@@ -130,7 +80,10 @@ print('cuda_name:', cuda_name)
 device = torch.device(cuda_name if torch.cuda.is_available() else "cpu")
 
 # Dodati mogucnost dodavanja argumenta za model_path!
-model_path = 'results/final_training_model_' + model_st + '_' + dataset + '.model'
+if mutation == '':
+    model_path = 'results/final_training_model_' + model_st + '_' + dataset + '.model'
+elif mutation == '_mutation':
+    model_path = 'results/mutation_training_model_' + model_st + '_' + dataset + '.model'
 
 BATCH_SIZE = 512
 
@@ -169,11 +122,41 @@ if __name__ == "__main__":
     # Load pre-trained model
     model = modeling().to(device)
     model.load_state_dict(torch.load(model_path))
+    print(model)
 
-    # Predict for combined dataset
-    G, P = predicting(model, device, combined_loader)
-    
-    plot_histograms(G, P)
+    # Find the layer just before fc1 and register a hook
+    embeddings = []
+    target_layer_name = None
+
+    for name, module in model.named_modules():
+        if isinstance(module, torch.nn.Linear) and name == 'fc1':
+            target_layer_name = previous_layer_name
+            break
+        previous_layer_name = name
+
+    if target_layer_name is None:
+        raise ValueError("Could not find the layer before fc1")
+    print(target_layer_name)
+
+    # Define a hook function
+    def hook(module, input, output):
+        embeddings.append(output.detach().cpu())
+
+    # Register the hook to the target layer
+    hook_handle = getattr(model, target_layer_name).register_forward_hook(hook)
+
+    # Predict for combined dataset to extract embeddings
+    with torch.no_grad():
+        for data in combined_loader:
+            data = data.to(device)
+            _ = model(data)
+
+    # Remove the hook
+    hook_handle.remove()
+
+    # Save embeddings to a CSV file
+    embeddings_np = torch.cat(embeddings).numpy()
+    np.savetxt(f'data/interpretability/{dataset}{mutation}_{model_st}_embeddings.csv', embeddings_np, delimiter=',')
 
 # TO-DO:
 # load model - done

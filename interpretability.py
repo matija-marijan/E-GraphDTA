@@ -5,7 +5,9 @@ import numpy as np
 # TO-DO:
 # extract ProtParam - DONE
 # extract GO terms
+# read .pt from from create_data to predict
 # extract embeddings (save to new file if datadir doesnt exist)
+# extract from specific layer
 # cross-correlation emb/param
 # cross-correlation emb/go -> pay attention to mutations!
 
@@ -25,6 +27,8 @@ for dataset in datasets:
 
     protparams_df = pd.read_csv(protparams_dir)
     protparams = protparams_df.iloc[:, [2,3,4,5,6,7,8]].to_numpy()
+
+    # embeddings = pd.read_csv(f'data/interpretability/{dataset}{mutation}_{model_st}_embeddings.csv')
 
 
 

@@ -111,7 +111,7 @@ modeling = all_models[args.model]
 model_st = modeling.__name__
 
 dataset = args.dataset
-
+mutation = ''
 if dataset == 'davis':
     if args.mutation == 0:
         mutation = ''
