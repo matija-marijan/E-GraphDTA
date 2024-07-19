@@ -22,6 +22,8 @@ from models.flag.flag_pdd_vnoc_ginconv import Flag_PDD_Vnoc_GINConvNet
 from models.flag.flag_esm_ginconv import Flag_ESM_GINConvNet
 from models.flag.flag_fri_ginconv import Flag_FRI_GINConvNet
 
+import csv
+
 def predicting(model, device, loader):
     model.eval()
     total_preds = torch.Tensor()
@@ -35,7 +37,7 @@ def predicting(model, device, loader):
             total_labels = torch.cat((total_labels, data.y.view(-1, 1).cpu()), 0)
     return total_labels.numpy().flatten(),total_preds.numpy().flatten()
 
-def plot_histograms(labels, predictions, bin_count = 50):
+def plot_histograms(labels, predictions, bin_count = 50, data_dir = 'tmp.png'):
     G = labels
     P = predictions
     xmin = min(G.min(), P.min())
@@ -69,7 +71,7 @@ def plot_histograms(labels, predictions, bin_count = 50):
 
     # Title for the entire figure
     fig.suptitle('Histogram of predictions and labels')
-
+    plt.savefig(data_dir)
     plt.show()
 
 datasets = ['davis', 'kiba']
@@ -143,12 +145,15 @@ if __name__ == "__main__":
     if model_st == "ESM_GINConvNet":
         processed_data_file_train = 'data/processed/' + dataset + mutation + '_esm_train.pt'
         processed_data_file_test = 'data/processed/' + dataset + mutation + '_esm_test.pt'
+        test_data_file = 'data/' + dataset + mutation + '_esm_test.csv'
     elif model_st == "FRI_GINConvNet":
         processed_data_file_train = 'data/processed/' + dataset + mutation + '_deepfri_train.pt'
         processed_data_file_test = 'data/processed/' + dataset + mutation + '_deepfri_test.pt'
+        test_data_file = 'data/' + dataset + mutation + '_deepfri_test.csv'
     else:
         processed_data_file_train = 'data/processed/' + dataset + mutation + '_train.pt'
         processed_data_file_test = 'data/processed/' + dataset + mutation + '_test.pt'
+        test_data_file = 'data/' + dataset + mutation + '_test.csv'
 
     if ((not os.path.isfile(processed_data_file_train)) or (not os.path.isfile(processed_data_file_test))):
         print('please run create_data.py to prepare data in pytorch format!')
@@ -174,9 +179,30 @@ if __name__ == "__main__":
     model.load_state_dict(torch.load(model_path))
 
     # Predict for combined dataset
-    G, P = predicting(model, device, combined_loader)
-    
-    plot_histograms(G, P)
+    # G, P = predicting(model, device, combined_loader)
+    # Plot histograms for combined dataset
+    # plot_histograms(G, P, data_dir = f'images/{model_st}_{dataset}{mutation}_histogram.png')
+
+    # Predict for test dataset
+    G, P = predicting(model, device, test_loader)
+
+    # Save test predictions       
+    output_data_file = 'predictions/' + model_st + '_' + dataset + mutation + '_test_predictions.csv'
+
+    with open(test_data_file, 'r') as infile, open(output_data_file, 'w', newline='') as outfile:
+        reader = csv.reader(infile)
+        writer = csv.writer(outfile)
+        
+        # Read the header and add the new column name
+        header = next(reader)
+        header.append('prediction')
+        writer.writerow(header)
+        
+        # Iterate over the rows and append the predictions
+        for i, row in enumerate(reader):
+            row.append(P[i])
+            writer.writerow(row)
+    print("Predictions written to .csv file successfully.")
 
 # TO-DO:
 # load model - done
