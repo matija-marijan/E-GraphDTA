@@ -13,7 +13,7 @@ import pandas as pd
 import numpy as np
 
 path = '/home/matijamarijan/projects/GraphDTA/'
-model_config = '/home/matijamarijan/projects/DeepFRI/trained_models/model_config.json'
+model_config = '/home/matijamarijan/projects/GraphDTA/trained_models/model_config.json'
 ont = 'cc'
 emb_layer = 'global_max_pooling1d'
 

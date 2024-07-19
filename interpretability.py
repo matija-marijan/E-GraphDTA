@@ -20,7 +20,7 @@ for dataset in datasets:
         proteins_dir = 'data/' + dataset + '/proteins.txt'
 
     # goterms_dir = 'data/' + dataset + '/go_terms.csv'
-    protparams_dir = 'data/' + dataset + '/interpretability/proteins_ProtParam.csv'
+    protparams_dir = 'data/' + dataset + '/protein_parameters/proteins_ProtParam.csv'
 
     # json parser
     proteins = json.load(open(proteins_dir), object_pairs_hook=OrderedDict)

@@ -17,5 +17,5 @@ results/validation*
 *.pt
 __pycache__/
 models/other
-multiple_training.sh
-multiple_validation.sh
+*.sh
+trained_models/
