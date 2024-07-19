@@ -171,8 +171,8 @@ if __name__ == "__main__":
         print('please run create_data.py to prepare data in pytorch format!')
     else:
         if model_st == "ESM_GINConvNet":
-            train_data = TestbedDataset(root='data', dataset=dataset+ mutation +'_esm_train')
-            test_data = TestbedDataset(root='data', dataset=dataset+ mutation +'_esm_test')
+            train_data = ESM_TestbedDataset(root='data', dataset=dataset+ mutation +'_esm_train')
+            test_data = ESM_TestbedDataset(root='data', dataset=dataset+ mutation +'_esm_test')
         elif model_st == "FRI_GINConvNet":
             train_data = ESM_TestbedDataset(root='data', dataset=dataset+ mutation +'_deepfri_train')
             test_data = ESM_TestbedDataset(root='data', dataset=dataset+ mutation +'_deepfri_test')

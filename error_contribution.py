@@ -22,6 +22,8 @@ from models.flag.flag_pdd_vnoc_ginconv import Flag_PDD_Vnoc_GINConvNet
 from models.flag.flag_esm_ginconv import Flag_ESM_GINConvNet
 from models.flag.flag_fri_ginconv import Flag_FRI_GINConvNet
 
+import csv
+
 def predicting(model, device, loader):
     model.eval()
     total_preds = torch.Tensor()
@@ -141,33 +143,24 @@ if __name__ == "__main__":
     print('\nrunning on ', model_st + '_' + dataset )
 
     if model_st == "ESM_GINConvNet":
-        processed_data_file_train = 'data/processed/' + dataset + mutation + '_esm_train.pt'
-        processed_data_file_test = 'data/processed/' + dataset + mutation + '_esm_test.pt'
+        processed_data_file = 'data/processed/' + dataset + mutation + '_esm_combined.pt'
     elif model_st == "FRI_GINConvNet":
-        processed_data_file_train = 'data/processed/' + dataset + mutation + '_deepfri_train.pt'
-        processed_data_file_test = 'data/processed/' + dataset + mutation + '_deepfri_test.pt'
+        processed_data_file = 'data/processed/' + dataset + mutation + '_deepfri_combined.pt'
     else:
-        processed_data_file_train = 'data/processed/' + dataset + mutation + '_train.pt'
-        processed_data_file_test = 'data/processed/' + dataset + mutation + '_test.pt'
+        processed_data_file = 'data/processed/' + dataset + mutation + '_combined.pt'
 
-    if ((not os.path.isfile(processed_data_file_train)) or (not os.path.isfile(processed_data_file_test))):
+    if ((not os.path.isfile(processed_data_file))):
         print('please run create_data.py to prepare data in pytorch format!')
     else:
         if model_st == "ESM_GINConvNet":
-            train_data = ESM_TestbedDataset(root='data', dataset=dataset+ mutation +'_esm_train')
-            test_data = ESM_TestbedDataset(root='data', dataset=dataset+ mutation +'_esm_test')
+            data = ESM_TestbedDataset(root='data', dataset=dataset+ mutation +'_esm_combined')
         elif model_st == "FRI_GINConvNet":
-            train_data = ESM_TestbedDataset(root='data', dataset=dataset+ mutation +'_deepfri_train')
-            test_data = ESM_TestbedDataset(root='data', dataset=dataset+ mutation +'_deepfri_test')
+            data = ESM_TestbedDataset(root='data', dataset=dataset+ mutation +'_deepfri_combined')
         else:
-            train_data = TestbedDataset(root='data', dataset=dataset+ mutation +'_train')
-            test_data = TestbedDataset(root='data', dataset=dataset+ mutation +'_test')
+            data = TestbedDataset(root='data', dataset=dataset+ mutation +'_combined')
 
-    train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=False)
-    test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False)
 
-    combined_data = ConcatDataset([train_data, test_data])
-    combined_loader = DataLoader(combined_data, batch_size=BATCH_SIZE, shuffle=False)
+    combined_loader = DataLoader(data)
 
     # Load pre-trained model
     model = modeling().to(device)
@@ -176,7 +169,33 @@ if __name__ == "__main__":
     # Predict for combined dataset
     G, P = predicting(model, device, combined_loader)
     
-    plot_histograms(G, P)
+    # plot_histograms(G, P)
+
+    if model_st == "ESM_GINConvNet":
+        data_file = 'data/' + dataset + mutation + '_esm_combined.csv'
+        output_data_file = 'data/error/' + model_st + '_' + dataset + mutation + '_esm_combined.csv'
+    elif model_st == "FRI_GINConvNet":
+        data_file = 'data/' + dataset + mutation + '_deepfri_combined.csv'
+        output_data_file = 'data/error/' + model_st + '_' +  dataset + mutation + '_deepfri_combined.csv'
+    else:
+        data_file = 'data/' + dataset + mutation + '_combined.csv'
+        output_data_file = 'data/error/' + model_st + '_' + dataset + mutation + '_combined.csv'
+
+    with open(data_file, 'r') as infile, open(output_data_file, 'w', newline='') as outfile:
+        reader = csv.reader(infile)
+        writer = csv.writer(outfile)
+        
+        # Read the header and add the new column name
+        header = next(reader)
+        header.append('prediction')
+        writer.writerow(header)
+        
+        # Iterate over the rows and append the predictions
+        for i, row in enumerate(reader):
+            row.append(P[i])
+            writer.writerow(row)
+
+print("Predictions have been appended to the new CSV file.")
 
 # TO-DO:
 # load model - done

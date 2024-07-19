@@ -1,7 +1,6 @@
 import os
 import pandas as pd
 import numpy as np
-import esm
 from rdkit import Chem
 import networkx as nx
 from utils import *
