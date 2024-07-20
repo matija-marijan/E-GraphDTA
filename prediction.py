@@ -145,15 +145,13 @@ if __name__ == "__main__":
     if model_st == "ESM_GINConvNet":
         processed_data_file_train = 'data/processed/' + dataset + mutation + '_esm_train.pt'
         processed_data_file_test = 'data/processed/' + dataset + mutation + '_esm_test.pt'
-        test_data_file = 'data/' + dataset + mutation + '_esm_test.csv'
     elif model_st == "FRI_GINConvNet":
         processed_data_file_train = 'data/processed/' + dataset + mutation + '_deepfri_train.pt'
         processed_data_file_test = 'data/processed/' + dataset + mutation + '_deepfri_test.pt'
-        test_data_file = 'data/' + dataset + mutation + '_deepfri_test.csv'
     else:
         processed_data_file_train = 'data/processed/' + dataset + mutation + '_train.pt'
         processed_data_file_test = 'data/processed/' + dataset + mutation + '_test.pt'
-        test_data_file = 'data/' + dataset + mutation + '_test.csv'
+    test_data_file = 'data/' + dataset + mutation + '_test.csv'
 
     if ((not os.path.isfile(processed_data_file_train)) or (not os.path.isfile(processed_data_file_test))):
         print('please run create_data.py to prepare data in pytorch format!')

@@ -1,8 +1,4 @@
-import torch
-from torch.utils.data import ConcatDataset
 import argparse
-from utils import *
-import matplotlib.pyplot as plt
 
 from models.gat import GATNet
 from models.gat_gcn import GAT_GCN
@@ -22,57 +18,26 @@ from models.flag.flag_pdd_vnoc_ginconv import Flag_PDD_Vnoc_GINConvNet
 from models.flag.flag_esm_ginconv import Flag_ESM_GINConvNet
 from models.flag.flag_fri_ginconv import Flag_FRI_GINConvNet
 
-import csv
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import json
 
-def predicting(model, device, loader):
-    model.eval()
-    total_preds = torch.Tensor()
-    total_labels = torch.Tensor()
-    print('Make prediction for {} samples...'.format(len(loader.dataset)))
-    with torch.no_grad():
-        for data in loader:
-            data = data.to(device)
-            output = model(data)
-            total_preds = torch.cat((total_preds, output.cpu()), 0)
-            total_labels = torch.cat((total_labels, data.y.view(-1, 1).cpu()), 0)
-    return total_labels.numpy().flatten(),total_preds.numpy().flatten()
+def calculate_mae(group):
+    mae = (group['affinity'] - group['prediction']).abs().median()
+    return mae
 
-def plot_histograms(labels, predictions, bin_count = 50):
-    G = labels
-    P = predictions
-    xmin = min(G.min(), P.min())
-    xmax = max(G.max(), P.max())
-
-    # Define specific bin edges based on combined min and max
-    bin_edges = np.linspace(np.floor(xmin), np.ceil(xmax), bin_count)
-
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-
-    # Histogram for labels
-    ax1.hist(G, bins=bin_edges)
-    ax1.set_xlabel('Label value - G')
-    ax1.set_ylabel('Bin count')
-    ax1.grid(True)
-
-    # Histogram for predictions
-    ax2.hist(P, bins=bin_edges)
-    ax2.set_xlabel('Prediction value - P')
-    ax2.set_ylabel('Bin count')
-    ax2.grid(True)
-
-    # Set the same axis range for both subplots
-    ymin = 0
-    ymax = max(ax1.get_ylim()[1], ax2.get_ylim()[1])
-
-    ax1.set_xlim([xmin, xmax])
-    ax1.set_ylim([ymin, ymax])
-    ax2.set_xlim([xmin, xmax])
-    ax2.set_ylim([ymin, ymax])
-
-    # Title for the entire figure
-    fig.suptitle('Histogram of predictions and labels')
-
-    plt.show()
+# Function to plot MAE
+def plot_mae(df, x_col, y_col, title, xlabel, ylabel, highlight_points, ax):
+    # sns.scatterplot(data=df, x=x_col, y=y_col, ax=ax, s=10)
+    ax.scatter(df[x_col], df[y_col], s=10)
+    for point in highlight_points:
+        x = df[df[x_col] == point][x_col].values[0]
+        y = df[df[x_col] == point][y_col].values[0]
+        ax.annotate(point, (x, y), textcoords="offset points", xytext=(0,10), ha='center')
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
 
 datasets = ['davis', 'kiba']
 
@@ -103,8 +68,6 @@ parser.add_argument('-d', '--dataset', type=str, choices=datasets, required=True
                     help="Dataset name: 'davis' or 'kiba'.")
 parser.add_argument('-m', '--model', type=str, choices=list(all_models.keys()), required=True, 
                     help="Model name. Choose from: " + ", ".join(all_models.keys()) + ".")
-parser.add_argument('-c', '--cuda', type=int, default=0, 
-                    help="CUDA device index (default: 0).")
 parser.add_argument('-x', '--mutation', type=int, default = 0, choices = {0, 1, 2},
                     help="Flag for including protein sequence mutations (1), and protein phosphorylation flags (2) (default: 0).")
 
@@ -126,76 +89,74 @@ if dataset == 'davis':
         model_st = modeling.__name__
 
 print(f"Mutation = {args.mutation}")
-# Select CUDA device if applicable
-cuda_name = f"cuda:{args.cuda}"
-print('cuda_name:', cuda_name)
-device = torch.device(cuda_name if torch.cuda.is_available() else "cpu")
-
-# Dodati mogucnost dodavanja argumenta za model_path!
-if mutation == '':
-    model_path = 'results/final_training_model_' + model_st + '_' + dataset + '.model'
-elif mutation == '_mutation':
-    model_path = 'results/mutation_training_model_' + model_st + '_' + dataset + '.model'
-
-BATCH_SIZE = 512
 
 if __name__ == "__main__":
     print('\nrunning on ', model_st + '_' + dataset )
 
-    if model_st == "ESM_GINConvNet":
-        processed_data_file = 'data/processed/' + dataset + mutation + '_esm_combined.pt'
-    elif model_st == "FRI_GINConvNet":
-        processed_data_file = 'data/processed/' + dataset + mutation + '_deepfri_combined.pt'
-    else:
-        processed_data_file = 'data/processed/' + dataset + mutation + '_combined.pt'
+    data_file = 'predictions/' + model_st + '_' + dataset + mutation + '_test_predictions.csv'
+    with open(data_file, 'r') as infile:
+        results_df = pd.read_csv(infile)
 
-    if ((not os.path.isfile(processed_data_file))):
-        print('please run create_data.py to prepare data in pytorch format!')
-    else:
-        if model_st == "ESM_GINConvNet":
-            data = ESM_TestbedDataset(root='data', dataset=dataset+ mutation +'_esm_combined')
-        elif model_st == "FRI_GINConvNet":
-            data = ESM_TestbedDataset(root='data', dataset=dataset+ mutation +'_deepfri_combined')
-        else:
-            data = TestbedDataset(root='data', dataset=dataset+ mutation +'_combined')
+    ground = np.asarray(results_df['affinity'])
+    prediction = np.asarray(results_df['prediction'])
 
+    print(ground)
+    print(prediction)
 
-    combined_loader = DataLoader(data)
+    # Calculate MAE for each drug
+    drug_mae = results_df.groupby('compound_iso_smiles').apply(calculate_mae).reset_index()
+    drug_mae.columns = ['compound_iso_smiles', 'mae']
+    drug_mae = drug_mae.sort_values(by='mae')
 
-    # Load pre-trained model
-    model = modeling().to(device)
-    model.load_state_dict(torch.load(model_path))
+    # Calculate MAE for each protein
+    protein_mae = results_df.groupby('target_sequence').apply(calculate_mae).reset_index()
+    protein_mae.columns = ['target_sequence', 'mae']
+    protein_mae = protein_mae.sort_values(by='mae')
 
-    # Predict for combined dataset
-    G, P = predicting(model, device, combined_loader)
+    top_10_drug_mae = drug_mae.tail(10)
+    top_10_drug_mae = top_10_drug_mae['compound_iso_smiles'].tolist()
+    with open(f'predictions/annotations/{model_st}_{dataset}{mutation}_drugs.json', 'w') as f:
+        json.dump(top_10_drug_mae, f, indent=4)
+
+    top_10_prot_mae = protein_mae.tail(10)
+    top_10_prot_mae = top_10_prot_mae['target_sequence'].tolist()
+    with open(f'predictions/annotations/{model_st}_{dataset}{mutation}_proteins.json', 'w') as f:
+        json.dump(top_10_prot_mae, f, indent=4)
+
+    # Create the plot
+    fig, axs = plt.subplots(1, 2, figsize=(14, 6))
+
+    # # Plot for drug_mae_sorted
+    # highlight_drugs = drug_mae.head(10)['compound_iso_smiles'].tolist()  # Highlight top 10 drugs with highest MAE
+    # plot_mae(drug_mae, 'compound_iso_smiles', 'mae', 'Prediction Error for Drugs', 'Drug', 'Median of Absolute Errors', highlight_drugs, axs[0])
+
+    # # Plot for protein_mae_sorted
+    # highlight_proteins = protein_mae.head(10)['target_sequence'].tolist()  # Highlight top 10 proteins with highest MAE
+    # plot_mae(protein_mae, 'target_sequence', 'mae', 'Prediction Error for Proteins', 'Protein', 'Median of Absolute Errors', highlight_proteins, axs[1])
+
+    # # Plot for Drug MAE
+    # axs[0].scatter(range(len(drug_mae)), drug_mae['mae'], s=10)
+    # # for i in range(-10, 0):  # Annotate only the top 10 highest MAE
+    # #     axs[0].annotate(drug_mae['compound_iso_smiles'].iloc[i], (len(drug_mae) + i, drug_mae['mae'].iloc[i]), fontsize=8,
+    # #                     xytext=(-10, 0), textcoords = 'offset points', ha='right')
+    # axs[0].set_xlabel('Drug')
+    # axs[0].set_ylabel('Median of Absolute Errors for Affinity Prediction')
+    # # axs[0].set_title(f'{model_st} Prediction Error for {dataset}{mutation} Test Data')
+    # axs[0].set_xticks([])
+
+    # # Plot for Protein MAE
+    # axs[1].scatter(range(len(protein_mae)), protein_mae['mae'], s=10)
+    # # for i in range(-10, 0):  # Annotate only the top 10 highest MAE
+    # #     axs[1].annotate(protein_mae['target_sequence'].iloc[i], (len(protein_mae) + i, protein_mae['mae'].iloc[i]), fontsize=8,
+    # #                     xytext=(-10, 0), textcoords = 'offset points', ha='right')
+    # axs[1].set_xlabel('Protein')
+    # # axs[1].set_ylabel('Median of Absolute Errors for Affinity Prediction')
+    # # axs[1].set_title(f'{model_st} Prediction Error for {dataset}{mutation} Test Data')
+    # axs[1].set_xticks([])
     
-    # plot_histograms(G, P)
-
-    if model_st == "ESM_GINConvNet":
-        data_file = 'data/' + dataset + mutation + '_esm_combined.csv'
-        output_data_file = 'data/error/' + model_st + '_' + dataset + mutation + '_esm_combined.csv'
-    elif model_st == "FRI_GINConvNet":
-        data_file = 'data/' + dataset + mutation + '_deepfri_combined.csv'
-        output_data_file = 'data/error/' + model_st + '_' +  dataset + mutation + '_deepfri_combined.csv'
-    else:
-        data_file = 'data/' + dataset + mutation + '_combined.csv'
-        output_data_file = 'data/error/' + model_st + '_' + dataset + mutation + '_combined.csv'
-
-    with open(data_file, 'r') as infile, open(output_data_file, 'w', newline='') as outfile:
-        reader = csv.reader(infile)
-        writer = csv.writer(outfile)
-        
-        # Read the header and add the new column name
-        header = next(reader)
-        header.append('prediction')
-        writer.writerow(header)
-        
-        # Iterate over the rows and append the predictions
-        for i, row in enumerate(reader):
-            row.append(P[i])
-            writer.writerow(row)
-
-print("Predictions have been appended to the new CSV file.")
+    # plt.suptitle(f'{model_st} Prediction Error for {dataset}{mutation} Test Data')
+    # plt.tight_layout()
+    # plt.show()
 
 # TO-DO:
 # load model - done
