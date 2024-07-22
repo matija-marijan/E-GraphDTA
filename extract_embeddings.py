@@ -147,7 +147,7 @@ if __name__ == "__main__":
 
     # Predict for combined dataset to extract embeddings
     with torch.no_grad():
-        for data in combined_loader:
+        for data in test_loader:
             data = data.to(device)
             _ = model(data)
 
@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
     # Save embeddings to a CSV file
     embeddings_np = torch.cat(embeddings).numpy()
-    np.savetxt(f'data/{dataset}/protein_embeddings/{dataset}{mutation}_{model_st}_embeddings.csv', embeddings_np, delimiter=',')
+    np.savetxt(f'interpretability/protein_embeddings/test/{dataset}{mutation}_{model_st}_embeddings.csv', embeddings_np, delimiter=',')
 
 # TO-DO:
 # load model - done

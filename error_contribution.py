@@ -155,7 +155,7 @@ if __name__ == "__main__":
             json.dump(top_10_prot_mae, f, indent=4)
 
     if mutation != '':
-        proteins = 'data/{dataset}/new_proteins.json'
+        proteins = f'data/{dataset}/new_proteins.json'
     else:
         proteins = f'data/{dataset}/proteins.txt'
     
@@ -167,10 +167,14 @@ if __name__ == "__main__":
     matching_keys_drugs = find_matching_keys(annotations_drug, drugs, canonicalize=True)
     print(matching_keys_drugs.keys())
     drug_keys = list(matching_keys_drugs.keys())
+    with open(f'predictions/annotation_identifiers/{model_st}_{dataset}{mutation}_drugs.json', 'w') as f:
+        json.dump(drug_keys, f)
 
     matching_keys_prots = find_matching_keys(annotations_prot, proteins)
     print(matching_keys_prots.keys())
     prot_keys = list(matching_keys_prots.keys())
+    with open(f'predictions/annotation_identifiers/{model_st}_{dataset}{mutation}_proteins.json', 'w') as f:
+        json.dump(prot_keys, f)
 
     # Create the plot
     fig, axs = (plt.subplots(1, 2, figsize=(14, 6)))
@@ -198,6 +202,7 @@ if __name__ == "__main__":
     plt.suptitle(f'{model_st} Prediction Error for {dataset}{mutation} Test Data')
     plt.tight_layout()
     plt.show()
+    # plt.savefig(f'predictions/images/{model_st}_{dataset}{mutation}_errors.png')
 
 # TO-DO:
 # load model - done
