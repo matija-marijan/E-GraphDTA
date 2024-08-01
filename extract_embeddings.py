@@ -22,6 +22,8 @@ from models.flag.flag_pdd_vnoc_ginconv import Flag_PDD_Vnoc_GINConvNet
 from models.flag.flag_esm_ginconv import Flag_ESM_GINConvNet
 from models.flag.flag_fri_ginconv import Flag_FRI_GINConvNet
 
+import random
+
 datasets = ['davis', 'kiba']
 
 all_models = {
@@ -53,6 +55,8 @@ parser.add_argument('-m', '--model', type=str, choices=list(all_models.keys()), 
                     help="Model name. Choose from: " + ", ".join(all_models.keys()) + ".")
 parser.add_argument('-c', '--cuda', type=int, default=0, 
                     help="CUDA device index (default: 0).")
+parser.add_argument('-s', '--seed', type=int, 
+                    help="Random seed for reproducibility.")
 parser.add_argument('-x', '--mutation', type=int, default = 0, choices = {0, 1, 2},
                     help="Flag for including protein sequence mutations (1), and protein phosphorylation flags (2) (default: 0).")
 
@@ -78,6 +82,20 @@ print(f"Mutation = {args.mutation}")
 cuda_name = f"cuda:{args.cuda}"
 print('cuda_name:', cuda_name)
 device = torch.device(cuda_name if torch.cuda.is_available() else "cpu")
+
+# Set seed:
+if args.seed is not None:
+    seed = args.seed
+    print("Seed: " + str(seed))
+    os.environ["CUBLAS_WORKSPACE_CONFIG"]=":4096:8"
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+    torch.use_deterministic_algorithms(True)
 
 # Dodati mogucnost dodavanja argumenta za model_path!
 if mutation == '':

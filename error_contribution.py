@@ -144,15 +144,15 @@ if __name__ == "__main__":
 
     top_10_drug_mae = drug_mae.tail(10)
     top_10_drug_mae = top_10_drug_mae['compound_iso_smiles'].tolist()
-    if ((not os.path.isfile(f'predictions/annotations/{model_st}_{dataset}{mutation}_drugs.json'))):
-        with open(f'predictions/annotations/{model_st}_{dataset}{mutation}_drugs.json', 'w') as f:
-            json.dump(top_10_drug_mae, f, indent=4)
+    # if ((not os.path.isfile(f'predictions/annotations/{model_st}_{dataset}{mutation}_drugs.json'))):
+    with open(f'predictions/annotations/{model_st}_{dataset}{mutation}_drugs.json', 'w') as f:
+        json.dump(top_10_drug_mae, f, indent=4)
 
     top_10_prot_mae = protein_mae.tail(10)
     top_10_prot_mae = top_10_prot_mae['target_sequence'].tolist()
-    if ((not os.path.isfile(f'predictions/annotations/{model_st}_{dataset}{mutation}_proteins.json'))):
-        with open(f'predictions/annotations/{model_st}_{dataset}{mutation}_proteins.json', 'w') as f:
-            json.dump(top_10_prot_mae, f, indent=4)
+    # if ((not os.path.isfile(f'predictions/annotations/{model_st}_{dataset}{mutation}_proteins.json'))):
+    with open(f'predictions/annotations/{model_st}_{dataset}{mutation}_proteins.json', 'w') as f:
+        json.dump(top_10_prot_mae, f, indent=4)
 
     if mutation != '':
         proteins = f'data/{dataset}/new_proteins.json'
