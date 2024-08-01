@@ -8,6 +8,8 @@ import re
 from io import StringIO
 import csv
 
+import json
+from collections import OrderedDict
 
 
 def ProtParam(uniprot_id):
@@ -137,3 +139,33 @@ def download_GO_for_protein(uniprot_id, output_csv, download_limit = 100):
         writer.writerow(fields)
 
     return GO  
+
+if __name__ == "__main__":
+    prot_dir = 'data/davis/proteins.txt'
+    proteins = json.load(open(prot_dir), object_pairs_hook=OrderedDict)
+    prots = []
+    columns = ['GeneID', 'Sequence', 'molecular_weight', 'theoretical_pI', 'ext_coeff_abs', 'ext_coeff_abs_reduced_Cys', 'instability_index', 'aliphatic_index', 'hydropathicity']
+    # df = pd.DataFrame(columns=columns)
+    data = []
+    i = 0
+    for gene, sequence in proteins.items():
+        molwt, th_pi, ext_co_ab0, ext_co_ab1, inst, aliph, hyd = ProtParam_from_sequence(sequence)
+        row = {
+            'GeneID': gene,
+            'Sequence': sequence,
+            'molecular_weight': molwt,
+            'theoretical_pI': th_pi,
+            'ext_coeff_abs': ext_co_ab0,
+            'ext_coeff_abs_reduced_Cys': ext_co_ab1,
+            'instability_index': inst,
+            'aliphatic_index': aliph,
+            'hydropathicity': hyd
+        }
+        data.append(row)
+        i += 1
+        print(i)
+
+    df = pd.DataFrame(data, columns=columns)
+    df.to_csv('interpretability/protein_parameters/davis_proteins_ProtParam.csv', index=False)
+
+        
