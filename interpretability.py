@@ -27,6 +27,10 @@ import json
 from collections import OrderedDict
 from rdkit import Chem
 
+from sklearn.cross_decomposition import CCA
+import matplotlib.pyplot as plt
+import matplotlib.patheffects as path_effects
+
 datasets = ['davis', 'kiba']
 
 all_models = {
@@ -89,14 +93,16 @@ if __name__ == "__main__":
     param_path = f'interpretability/protein_parameters/{dataset}{mutation}_proteins_ProtParam.csv'
     emb_path = f'interpretability/protein_embeddings/test/{dataset}{mutation}_{model_st}_embeddings.csv'
 
-    protparams = pd.read_csv(param_path, usecols=[2,3,4,5,6,7,8]).to_numpy()
-    # protparams = protparams_df.iloc[:, [2,3,4,5,6,7,8]].to_numpy()
-    # print(np.shape(protparams))
+    protparams_df = pd.read_csv(param_path)
+    # print(protparams_df.columns)
+    # protparams = pd.read_csv(param_path, usecols=[2,3,4,5,6,7,8]).to_numpy()
+    protparams = protparams_df.iloc[:, [2,3,4,5,6,7,8]].to_numpy()
+    print(np.shape(protparams))
     # print(protparams)
 
     embeddings_df = pd.read_csv(emb_path, header=None)
     embeddings = np.asarray(embeddings_df)
-    # print(np.shape(embeddings))
+    print(np.shape(embeddings))
     # print(embeddings_df.shape)
 
     # latent_train_mapping = {index: latent_train[i] for i, index in enumerate(train_fold)}
@@ -115,6 +121,33 @@ if __name__ == "__main__":
     rows, cols = np.where(np.isnan(affinity)==False) 
     
     rows, cols = rows[test_fold], cols[test_fold]
+    
+    # rows su sad indeksi od 0 do 67 drugs, a cols su indeksi od 0 do 441 prots
+
+    # print(*rows, sep=' ')
+    print(np.max(rows))
+    print(np.shape(rows))
+    
+    # print(*cols, sep=' ')
+    print(np.max(cols))
+    print(np.shape(cols))
+
+    print(proteins.keys().__len__())
+    print(list(proteins.keys())[0])
+    # print(list(proteins.keys()))
+    
+    all_params = np.zeros((embeddings.shape[0], protparams.shape[1]))
+    print(np.shape(all_params))
+
+    for i in range(embeddings.shape[0]):
+        all_params[i, :] = protparams[cols[i]]
+        # print(protparams[cols[i]])
+        # print(all_params[i, :])
+        # print(i)
+        # print(cols[i])
+        # exit()
+        
+    print(np.shape(all_params))
 
     # affinity = 68 x 442 -> cols = proteins
     # affinity_rows[index_testfold], affinity_cols[index_testfold] -> find protein column number
@@ -123,6 +156,58 @@ if __name__ == "__main__":
     # average the embeddings 
 
     # OR open *test.csv from create_data.py that has already done test_fold and continue from there?
+
+    # od 442 x 7 napraviti 5010 x 7
+    # procitati test foldove
+    # procitati koji je protein
+    # naci njegove protparam
+    #
+
+    # CCA analysis
+    n_components = 2
+    cca = CCA(n_components=n_components)
+    X_c, Y_c = cca.fit(embeddings, all_params).transform(embeddings, all_params)
+
+    # Create a DataFrame for plotting
+    df = pd.DataFrame({
+        'CCA1_X': X_c[:, 0],
+        'CCA2_X': X_c[:, 1],
+        'CCA1_Y': Y_c[:, 0],
+        'CCA2_Y': Y_c[:, 1]
+    })
+
+    plt.figure(figsize=(10, 10))
+
+    # Plot the drugs (latent variables)
+    plt.plot(df['CCA1_X'], df['CCA2_X'], 'o', color='blue', alpha=0.35, label='Proteins', zorder = 1)
+
+    # Plot the latent variables
+    plt.plot(df['CCA1_Y'], df['CCA2_Y'], 'd', color='green', alpha=0.15, label='Latent Embeddings', zorder=1)
+
+    # Add arrows for molecular descriptors
+    for i in range(all_params.shape[1]):
+        arrows = plt.arrow(0, 0, cca.x_weights_[i, 0], cca.x_weights_[i, 1], color='red', alpha=1, linewidth=2, head_width=0.01, head_length=0.01, zorder = 3)
+        arrows.set_path_effects([path_effects.Stroke(linewidth=3, foreground='black'), path_effects.Normal()])
+
+        text = plt.text(cca.x_weights_[i, 0] + 0.01, cca.x_weights_[i, 1] + 0.01, protparams_df.columns[i + 2], color='red', fontsize=10, fontweight='bold', zorder=4)
+        text.set_path_effects([path_effects.Stroke(linewidth=1.5, foreground='black'), path_effects.Normal()])
+    # Create a custom legend for descriptors
+    handles = [
+        plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='blue', markersize=10, label='Proteins'),
+        plt.Line2D([0], [0], marker='d', color='w', markerfacecolor='green', markersize=10, label='Latent Embeddings'),
+        plt.Line2D([0], [0], color='red', lw=2, label='Protein Parameters')
+    ]
+
+    plt.xlabel('CCA1')
+    plt.ylabel('CCA2')
+    plt.title(f'{model_st} Redundancy Analysis Triplot')
+    plt.legend(handles=handles, loc='upper right')
+    plt.grid(True)
+    plt.gca().set_aspect('equal', adjustable='box')
+    # plt.xlim(-1, 1)
+    # plt.ylim(-1, 1)
+    plt.show()
+
 
 # TO-DO:
 # extract ProtParam - DONE

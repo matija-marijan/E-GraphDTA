@@ -10,6 +10,7 @@ data/*.csv
 data/processed/*
 data/davis/other
 data/kiba/other
+data/combined data/
 wandb/*
 other/*
 results/old
