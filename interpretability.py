@@ -167,6 +167,8 @@ if __name__ == "__main__":
     n_components = 2
     cca = CCA(n_components=n_components)
     X_c, Y_c = cca.fit(embeddings, all_params).transform(embeddings, all_params)
+    print(np.shape(X_c))
+    print(np.shape(Y_c))
 
     # Create a DataFrame for plotting
     df = pd.DataFrame({
@@ -176,21 +178,60 @@ if __name__ == "__main__":
         'CCA2_Y': Y_c[:, 1]
     })
 
+    emb_proj_x = df['CCA1_X']
+    emb_proj_y = df['CCA2_X']
+    param_proj_x = df['CCA1_Y']
+    param_proj_y = df['CCA2_Y']
+    
+    # left singular vectors
+    emb_vectors = cca.x_weights_
+    # right singular vectors
+    param_vectors = cca.y_weights_    
+
+    print(np.shape(emb_proj_x))
+    print(np.shape(emb_proj_y))
+    print(np.shape(param_proj_x))
+    print(np.shape(param_proj_y))
+    print(np.shape(cca.x_weights_))
+    print(np.shape(cca.y_weights_))
+
     plt.figure(figsize=(10, 10))
 
-    # Plot the drugs (latent variables)
-    plt.plot(df['CCA1_X'], df['CCA2_X'], 'o', color='blue', alpha=0.35, label='Proteins', zorder = 1)
+    # Plot the latent variable projections
+    plt.plot(df['CCA1_X'], df['CCA2_X'], 'o', color='blue', alpha=1, label='Proteins', zorder = 1)
 
-    # Plot the latent variables
-    plt.plot(df['CCA1_Y'], df['CCA2_Y'], 'd', color='green', alpha=0.15, label='Latent Embeddings', zorder=1)
+    # Plot the latent variable singular vectors
+    plt.plot(cca.x_weights_[:, 0], cca.x_weights_[:, 1], 'd', color='green', alpha=1, label='Latent Embeddings', zorder=1)
+    
+    # Calculate the Euclidean distance from (0, 0) for each point
+    distances = np.sqrt(cca.x_weights_[:, 0]**2 + cca.x_weights_[:, 1]**2)
 
-    # Add arrows for molecular descriptors
+    # Find the indices of the two farthest points
+    farthest_indices = np.argsort(distances)[-2:]
+
+    # Circle the two farthest points
+    for idx in farthest_indices:
+        plt.scatter(cca.x_weights_[idx, 0], cca.x_weights_[idx, 1], s=200, facecolors='none', edgecolors='red', linewidths=2, zorder=2)
+        plt.text(cca.x_weights_[idx, 0] + 0.01, cca.x_weights_[idx, 1] + 0.01, str(idx), color='black', fontsize=12, fontweight='bold', zorder=4)
+
+    # Add arrows for protein descriptors
     for i in range(all_params.shape[1]):
-        arrows = plt.arrow(0, 0, cca.x_weights_[i, 0], cca.x_weights_[i, 1], color='red', alpha=1, linewidth=2, head_width=0.01, head_length=0.01, zorder = 3)
-        arrows.set_path_effects([path_effects.Stroke(linewidth=3, foreground='black'), path_effects.Normal()])
+        arrows = plt.arrow(0, 0, cca.y_weights_[i, 0], cca.y_weights_[i, 1], color='red', alpha=1, linewidth=1.5, head_width=0.01, head_length=0.01, zorder = 3)
+        arrows.set_path_effects([path_effects.Stroke(linewidth=2, foreground='black'), path_effects.Normal()])
 
-        text = plt.text(cca.x_weights_[i, 0] + 0.01, cca.x_weights_[i, 1] + 0.01, protparams_df.columns[i + 2], color='red', fontsize=10, fontweight='bold', zorder=4)
+        text = plt.text(cca.y_weights_[i, 0] + 0.01, cca.y_weights_[i, 1] + 0.01, protparams_df.columns[i + 2], color='red', fontsize=10, fontweight='bold', zorder=4)
         text.set_path_effects([path_effects.Stroke(linewidth=1.5, foreground='black'), path_effects.Normal()])
+
+    # Calculate the Euclidean distance from (0, 0) for each arrow endpoint
+    distances = np.sqrt(cca.y_weights_[:, 0]**2 + cca.y_weights_[:, 1]**2)
+
+    # Find the indices of the two farthest arrows
+    farthest_indices = np.argsort(distances)[-2:]
+
+    # Circle the two farthest arrows and add text with their indices
+    for idx in farthest_indices:
+        plt.scatter(cca.y_weights_[idx, 0], cca.y_weights_[idx, 1], s=200, facecolors='none', edgecolors='green', linewidths=2, zorder=4)
+
     # Create a custom legend for descriptors
     handles = [
         plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='blue', markersize=10, label='Proteins'),
