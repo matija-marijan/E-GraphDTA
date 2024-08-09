@@ -167,20 +167,20 @@ if __name__ == "__main__":
     matching_keys_drugs = find_matching_keys(annotations_drug, drugs, canonicalize=True)
     print(matching_keys_drugs.keys())
     drug_keys = list(matching_keys_drugs.keys())
-    with open(f'predictions/annotation_identifiers/{model_st}_{dataset}{mutation}_drugs.json', 'w') as f:
-        json.dump(drug_keys, f)
+    # with open(f'images/error contribution/{model_st}_{dataset}{mutation}_drugs.json', 'w') as f:
+    #     json.dump(drug_keys, f)
 
     matching_keys_prots = find_matching_keys(annotations_prot, proteins)
     print(matching_keys_prots.keys())
     prot_keys = list(matching_keys_prots.keys())
-    with open(f'predictions/annotation_identifiers/{model_st}_{dataset}{mutation}_proteins.json', 'w') as f:
-        json.dump(prot_keys, f)
+    # with open(f'images/error contribution/{model_st}_{dataset}{mutation}_proteins.json', 'w') as f:
+    #     json.dump(prot_keys, f)
 
     # Create the plot
     fig, axs = (plt.subplots(1, 2, figsize=(14, 6)))
 
     # Plot for Drug MAE
-    axs[0].scatter(range(len(drug_mae)), drug_mae['mae'], s=10)
+    axs[0].scatter(range(len(drug_mae)), drug_mae['mae'], s=10, color = 'black')
     for i in range(-10, 0):  # Annotate only the top 10 highest MAE
         axs[0].annotate(drug_keys[-i - 1], (len(drug_mae) + i, drug_mae['mae'].iloc[i]), fontsize=8,
                         xytext=(-10, 0), textcoords = 'offset points', ha='right')
@@ -190,7 +190,7 @@ if __name__ == "__main__":
     axs[0].set_xticks([])
 
     # Plot for Protein MAE
-    axs[1].scatter(range(len(protein_mae)), protein_mae['mae'], s=10)
+    axs[1].scatter(range(len(protein_mae)), protein_mae['mae'], s=10, color='black')
     for i in range(-10, 0):  # Annotate only the top 10 highest MAE
         axs[1].annotate(prot_keys[-i - 1], (len(protein_mae) + i, protein_mae['mae'].iloc[i]), fontsize=8,
                         xytext=(-10, 0), textcoords = 'offset points', ha='right')
@@ -201,8 +201,8 @@ if __name__ == "__main__":
     
     plt.suptitle(f'{model_st} Prediction Error for {dataset}{mutation} Test Data')
     plt.tight_layout()
-    plt.show()
-    # plt.savefig(f'predictions/images/{model_st}_{dataset}{mutation}_errors.png')
+    # plt.show()
+    plt.savefig(f'images/error contribution/a{model_st}_{dataset}{mutation}_errors.png', dpi=500)
 
 # TO-DO:
 # load model - done

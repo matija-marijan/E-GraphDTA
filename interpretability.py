@@ -30,6 +30,7 @@ from rdkit import Chem
 from sklearn.cross_decomposition import CCA
 import matplotlib.pyplot as plt
 import matplotlib.patheffects as path_effects
+import matplotlib.colors as mcolors
 
 datasets = ['davis', 'kiba']
 
@@ -188,6 +189,7 @@ if __name__ == "__main__":
     # right singular vectors
     param_vectors = cca.y_weights_    
 
+    print()
     print(np.shape(emb_proj_x))
     print(np.shape(emb_proj_y))
     print(np.shape(param_proj_x))
@@ -197,57 +199,65 @@ if __name__ == "__main__":
 
     plt.figure(figsize=(10, 10))
 
+    # color1 = mcolors.TABLEAU_COLORS['tab:color1']
+    # color2 = mcolors.TABLEAU_COLORS['tab:color2']
+    
+    color1 = "#1f77b4"
+    color2 = "#d62728"
+    color3 = "black"
+
     # Plot the latent variable projections
-    plt.plot(df['CCA1_X'], df['CCA2_X'], 'o', color='blue', alpha=1, label='Proteins', zorder = 1)
+    plt.plot(emb_proj_x, emb_proj_y, '.', color=color1, alpha=1, label='Proteins', zorder = 1)
 
     # Plot the latent variable singular vectors
-    plt.plot(cca.x_weights_[:, 0], cca.x_weights_[:, 1], 'd', color='green', alpha=1, label='Latent Embeddings', zorder=1)
+    plt.plot(emb_vectors[:, 0], emb_vectors[:, 1], '^', color=color2, alpha=1, label='Latent Embeddings', zorder=2)
     
     # Calculate the Euclidean distance from (0, 0) for each point
-    distances = np.sqrt(cca.x_weights_[:, 0]**2 + cca.x_weights_[:, 1]**2)
+    distances = np.sqrt(emb_vectors[:, 0]**2 + emb_vectors[:, 1]**2)
 
-    # Find the indices of the two farthest points
-    farthest_indices = np.argsort(distances)[-2:]
+    # Find the indices of the three farthest points
+    farthest_indices = np.argsort(distances)[-3:]
 
     # Circle the two farthest points
     for idx in farthest_indices:
-        plt.scatter(cca.x_weights_[idx, 0], cca.x_weights_[idx, 1], s=200, facecolors='none', edgecolors='red', linewidths=2, zorder=2)
-        plt.text(cca.x_weights_[idx, 0] + 0.01, cca.x_weights_[idx, 1] + 0.01, str(idx), color='black', fontsize=12, fontweight='bold', zorder=4)
+        plt.scatter(emb_vectors[idx, 0], emb_vectors[idx, 1], s=200, facecolors='none', edgecolors=color3, linewidths=2, zorder=3)
+        # text = plt.text(emb_vectors[idx, 0] + 0.025, emb_vectors[idx, 1] + 0.025, str(f'LV-{idx}'), color=color2, fontsize=10, fontweight='bold', zorder=5)
+        # text.set_path_effects([path_effects.Stroke(linewidth=1, foreground=color3), path_effects.Normal()])
 
     # Add arrows for protein descriptors
     for i in range(all_params.shape[1]):
-        arrows = plt.arrow(0, 0, cca.y_weights_[i, 0], cca.y_weights_[i, 1], color='red', alpha=1, linewidth=1.5, head_width=0.01, head_length=0.01, zorder = 3)
-        arrows.set_path_effects([path_effects.Stroke(linewidth=2, foreground='black'), path_effects.Normal()])
-
-        text = plt.text(cca.y_weights_[i, 0] + 0.01, cca.y_weights_[i, 1] + 0.01, protparams_df.columns[i + 2], color='red', fontsize=10, fontweight='bold', zorder=4)
-        text.set_path_effects([path_effects.Stroke(linewidth=1.5, foreground='black'), path_effects.Normal()])
+        arrows = plt.arrow(0, 0, param_vectors[i, 0], param_vectors[i, 1], color=color3, alpha=1, linewidth=1.25, head_width=0.0125, head_length=0.0125, zorder = 4)
+        # arrows.set_path_effects([path_effects.Stroke(linewidth=2, foreground=color3), path_effects.Normal()])
 
     # Calculate the Euclidean distance from (0, 0) for each arrow endpoint
-    distances = np.sqrt(cca.y_weights_[:, 0]**2 + cca.y_weights_[:, 1]**2)
+    distances = np.sqrt(param_vectors[:, 0]**2 + param_vectors[:, 1]**2)
 
-    # Find the indices of the two farthest arrows
-    farthest_indices = np.argsort(distances)[-2:]
+    # Find the indices of the three/four farthest arrows
+    farthest_indices = np.argsort(distances)[-3:]
 
     # Circle the two farthest arrows and add text with their indices
-    for idx in farthest_indices:
-        plt.scatter(cca.y_weights_[idx, 0], cca.y_weights_[idx, 1], s=200, facecolors='none', edgecolors='green', linewidths=2, zorder=4)
+    for i in farthest_indices:
+        plt.scatter(param_vectors[i, 0], param_vectors[i, 1], s=200, facecolors='none', edgecolors=color2, linewidths=2, zorder=4)
+        # text = plt.text(param_vectors[i, 0] + 0.025, param_vectors[i, 1] + 0.025, protparams_df.columns[i + 2], color=color3, fontsize=10, fontweight='bold', zorder=5)
+        # text.set_path_effects([path_effects.Stroke(linewidth=1, foreground='white'), path_effects.Normal()])
 
     # Create a custom legend for descriptors
     handles = [
-        plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='blue', markersize=10, label='Proteins'),
-        plt.Line2D([0], [0], marker='d', color='w', markerfacecolor='green', markersize=10, label='Latent Embeddings'),
-        plt.Line2D([0], [0], color='red', lw=2, label='Protein Parameters')
+        plt.Line2D([0], [0], marker='.', color='w', markerfacecolor=color1, markersize=10, label='Protein embedding projections'),
+        plt.Line2D([0], [0], marker='^', color='w', markerfacecolor=color2, markersize=10, label='Protein parameter projections'),
+        plt.Line2D([0], [0], color=color3, lw=2, label='Protein parameter singular vectors'),
     ]
 
     plt.xlabel('CCA1')
     plt.ylabel('CCA2')
-    plt.title(f'{model_st} Redundancy Analysis Triplot')
+    plt.title(f'{model_st} Redundancy Analysis Triplot on the {dataset} dataset')
     plt.legend(handles=handles, loc='upper right')
     plt.grid(True)
     plt.gca().set_aspect('equal', adjustable='box')
-    # plt.xlim(-1, 1)
-    # plt.ylim(-1, 1)
-    plt.show()
+    plt.xlim(-1.5, 1.5)
+    plt.ylim(-1.5, 1.5)
+    # plt.show()
+    # plt.savefig(f'images/interpretability/{model_st}_{dataset}{mutation}_CCA.png', dpi=500)
 
 
 # TO-DO:
