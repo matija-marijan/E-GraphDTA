@@ -20,3 +20,8 @@ __pycache__/
 models/other
 *.sh
 trained_models/
+predictions/
+post hoc/
+models/flag/
+interpretability/
+images/
