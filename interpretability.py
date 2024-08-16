@@ -91,15 +91,16 @@ if __name__ == "__main__":
     train_fold = [ee for e in train_fold for ee in e ]
     test_fold = json.load(open(fpath + "folds/test_fold_setting1.txt"))
 
-    param_path = f'interpretability/protein_parameters/{dataset}{mutation}_proteins_ProtParam.csv'
+    param_path = f'interpretability/new_protein_parameters/{dataset}{mutation}_proteins_ProtParam.csv'
     emb_path = f'interpretability/protein_embeddings/test/{dataset}{mutation}_{model_st}_embeddings.csv'
 
     protparams_df = pd.read_csv(param_path)
     # print(protparams_df.columns)
     # protparams = pd.read_csv(param_path, usecols=[2,3,4,5,6,7,8]).to_numpy()
-    protparams = protparams_df.iloc[:, [2,3,4,5,6,7,8]].to_numpy()
+    # Exclude 2 AA columns 30 and 31 (no protein has them)
+    protparams = protparams_df.iloc[:, [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,32,33]].to_numpy()
     print(np.shape(protparams))
-    # print(protparams)
+    print(protparams)
 
     embeddings_df = pd.read_csv(emb_path, header=None)
     embeddings = np.asarray(embeddings_df)
@@ -233,7 +234,7 @@ if __name__ == "__main__":
     distances = np.sqrt(param_vectors[:, 0]**2 + param_vectors[:, 1]**2)
 
     # Find the indices of the three/four farthest arrows
-    farthest_indices = np.argsort(distances)[-3:]
+    farthest_indices = np.argsort(distances)[-4:]
 
     # Circle the two farthest arrows and add text with their indices
     for i in farthest_indices:
@@ -251,13 +252,16 @@ if __name__ == "__main__":
     plt.xlabel('CCA1')
     plt.ylabel('CCA2')
     plt.title(f'{model_st} Redundancy Analysis Triplot on the {dataset} dataset')
-    plt.legend(handles=handles, loc='upper right')
+    plt.legend(handles=handles, loc='upper right', fontsize=12)
     plt.grid(True)
     plt.gca().set_aspect('equal', adjustable='box')
     plt.xlim(-1.5, 1.5)
     plt.ylim(-1.5, 1.5)
+    # plt.xlim(-1, 1)
+    # plt.ylim(-1, 1)
     # plt.show()
-    # plt.savefig(f'images/interpretability/{model_st}_{dataset}{mutation}_CCA.png', dpi=500)
+    plt.savefig(f'images/interpretability/{model_st}_{dataset}{mutation}_CCA.png', dpi=300)
+    # plt.savefig(f'images/interpretability/{model_st}_{dataset}{mutation}_CCA_annot.png', dpi=100)
 
 
 # TO-DO:
