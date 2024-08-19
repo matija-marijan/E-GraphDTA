@@ -150,9 +150,9 @@ if args.seed is not None:
 
 # Dodati mogucnost dodavanja argumenta za model_path!
 if mutation == '':
-    model_path = 'results/final_training_model_' + model_st + '_' + dataset + '.model'
+    model_path = 'trained_models/final_training_model_' + model_st + '_' + dataset + '.model'
 elif mutation == '_mutation':
-    model_path = 'results/mutation_training_model_' + model_st + '_' + dataset + '.model'
+    model_path = 'trained_models/mutation_training_model_' + model_st + '_' + dataset + '.model'
 
 BATCH_SIZE = 512
 
@@ -202,7 +202,7 @@ if __name__ == "__main__":
     G, P = predicting(model, device, test_loader)
 
     # Save test predictions       
-    output_data_file = 'predictions/' + model_st + '_' + dataset + mutation + '_test_predictions.csv'
+    output_data_file = 'analysis/predictions/' + model_st + '_' + dataset + mutation + '_test_predictions.csv'
 
     with open(test_data_file, 'r') as infile, open(output_data_file, 'w', newline='') as outfile:
         reader = csv.reader(infile)

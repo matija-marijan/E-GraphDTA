@@ -253,6 +253,6 @@ if __name__ == "__main__":
             print(i)
 
         df = pd.DataFrame(data, columns=columns)
-        df.to_csv(f'interpretability/new_protein_parameters/{save_name}_proteins_ProtParam.csv', index=False)
+        df.to_csv(f'analysis/interpretability/protein_parameters/{save_name}_proteins_ProtParam.csv', index=False)
 
         

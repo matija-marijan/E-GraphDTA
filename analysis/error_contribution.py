@@ -122,7 +122,7 @@ print(f"Mutation = {args.mutation}")
 if __name__ == "__main__":
     print('\nrunning on ', model_st + '_' + dataset )
 
-    data_file = 'predictions/' + model_st + '_' + dataset + mutation + '_test_predictions.csv'
+    data_file = 'analysis/predictions/' + model_st + '_' + dataset + mutation + '_test_predictions.csv'
     with open(data_file, 'r') as infile:
         results_df = pd.read_csv(infile)
 
@@ -144,14 +144,14 @@ if __name__ == "__main__":
 
     top_10_drug_mae = drug_mae.tail(10)
     top_10_drug_mae = top_10_drug_mae['compound_iso_smiles'].tolist()
-    # if ((not os.path.isfile(f'predictions/annotations/{model_st}_{dataset}{mutation}_drugs.json'))):
-    with open(f'predictions/annotations/{model_st}_{dataset}{mutation}_drugs.json', 'w') as f:
+    # if ((not os.path.isfile(f'analysis/predictions/annotations/{model_st}_{dataset}{mutation}_drugs.json'))):
+    with open(f'analysis/predictions/annotations/{model_st}_{dataset}{mutation}_drugs.json', 'w') as f:
         json.dump(top_10_drug_mae, f, indent=4)
 
     top_10_prot_mae = protein_mae.tail(10)
     top_10_prot_mae = top_10_prot_mae['target_sequence'].tolist()
-    # if ((not os.path.isfile(f'predictions/annotations/{model_st}_{dataset}{mutation}_proteins.json'))):
-    with open(f'predictions/annotations/{model_st}_{dataset}{mutation}_proteins.json', 'w') as f:
+    # if ((not os.path.isfile(f'analysis/predictions/annotations/{model_st}_{dataset}{mutation}_proteins.json'))):
+    with open(f'analysis/predictions/annotations/{model_st}_{dataset}{mutation}_proteins.json', 'w') as f:
         json.dump(top_10_prot_mae, f, indent=4)
 
     if mutation != '':
@@ -161,8 +161,8 @@ if __name__ == "__main__":
     
     drugs = f'data/{dataset}/ligands_can.txt'
 
-    annotations_drug = f'predictions/annotations/{model_st}_{dataset}{mutation}_drugs.json'
-    annotations_prot = f'predictions/annotations/{model_st}_{dataset}{mutation}_proteins.json'
+    annotations_drug = f'analysis/predictions/annotations/{model_st}_{dataset}{mutation}_drugs.json'
+    annotations_prot = f'analysis/predictions/annotations/{model_st}_{dataset}{mutation}_proteins.json'
 
     matching_keys_drugs = find_matching_keys(annotations_drug, drugs, canonicalize=True)
     print(matching_keys_drugs.keys())

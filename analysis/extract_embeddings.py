@@ -99,9 +99,9 @@ if args.seed is not None:
 
 # Dodati mogucnost dodavanja argumenta za model_path!
 if mutation == '':
-    model_path = 'results/final_training_model_' + model_st + '_' + dataset + '.model'
+    model_path = 'trained_models/final_training_model_' + model_st + '_' + dataset + '.model'
 elif mutation == '_mutation':
-    model_path = 'results/mutation_training_model_' + model_st + '_' + dataset + '.model'
+    model_path = 'trained_models/mutation_training_model_' + model_st + '_' + dataset + '.model'
 
 BATCH_SIZE = 512
 
@@ -174,7 +174,7 @@ if __name__ == "__main__":
 
     # Save embeddings to a CSV file
     embeddings_np = torch.cat(embeddings).numpy()
-    np.savetxt(f'interpretability/protein_embeddings/test/{dataset}{mutation}_{model_st}_embeddings.csv', embeddings_np, delimiter=',')
+    np.savetxt(f'analysis/interpretability/protein_embeddings/test/{dataset}{mutation}_{model_st}_embeddings.csv', embeddings_np, delimiter=',')
 
 # TO-DO:
 # load model - done

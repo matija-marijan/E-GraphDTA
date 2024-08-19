@@ -91,8 +91,8 @@ if __name__ == "__main__":
     train_fold = [ee for e in train_fold for ee in e ]
     test_fold = json.load(open(fpath + "folds/test_fold_setting1.txt"))
 
-    param_path = f'interpretability/new_protein_parameters/{dataset}{mutation}_proteins_ProtParam.csv'
-    emb_path = f'interpretability/protein_embeddings/test/{dataset}{mutation}_{model_st}_embeddings.csv'
+    param_path = f'analysis/interpretability/new_protein_parameters/{dataset}{mutation}_proteins_ProtParam.csv'
+    emb_path = f'analysis/interpretability/protein_embeddings/test/{dataset}{mutation}_{model_st}_embeddings.csv'
 
     protparams_df = pd.read_csv(param_path)
     # print(protparams_df.columns)
@@ -260,8 +260,8 @@ if __name__ == "__main__":
     # plt.xlim(-1, 1)
     # plt.ylim(-1, 1)
     # plt.show()
-    plt.savefig(f'interpretability/{model_st}_{dataset}{mutation}_CCA.png', dpi=300, bbox_inches='tight')
-    # plt.savefig(f'images/interpretability/{model_st}_{dataset}{mutation}_CCA_annot.png', dpi=100)
+    plt.savefig(f'analysis/interpretability/{model_st}_{dataset}{mutation}_CCA.png', dpi=300, bbox_inches='tight')
+    # plt.savefig(f'analysis/interpretability/{model_st}_{dataset}{mutation}_CCA_annot.png', dpi=100)
 
 
 # TO-DO:
