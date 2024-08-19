@@ -1,6 +1,9 @@
-# P-GraphDTA (Working title)
-Implementation of different protein representations into GraphDTA.
+# P-GraphDTA: Enhanced protein representations improve drug–target binding affinity prediction
+Implementation of different protein representation models on top of GraphDTA's drug graph neural network processing methods.
 
+<p align="center">
+<img src="images/diagrams/pipeline.png" width="800">
+</p> 
 ## Resources:
 
 + README.md: this file.
