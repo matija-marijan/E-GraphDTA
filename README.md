@@ -4,18 +4,22 @@ Implementation of different protein representation models on top of GraphDTA's d
 <p align="center">
 <img src="images/diagrams/pipeline.png" width="800">
 </p> 
-## Resources:
+
+### Resources:
 
 + README.md: this file.
-+ data/davis/folds/test_fold_setting1.txt,train_fold_setting1.txt; data/davis/Y,ligands_can.txt,proteins.txt
-  data/kiba/folds/test_fold_setting1.txt,train_fold_setting1.txt; data/kiba/Y,ligands_can.txt,proteins.txt
-  These file were downloaded from https://github.com/hkmztrk/DeepDTA/tree/master/data
++ data/davis/\*, data/kiba/\* - These file were downloaded from https://github.com/hkmztrk/DeepDTA/tree/master/data
++ data/davis/new_proteins.json - This file was created with data from https://github.com/larngroup/DTITR/blob/main/data/davis/dataset/davis_dataset_processed.csv
 
-###  Source codes:
+### Source codes:
 + create_data.py: create data in pytorch format
 + utils.py: include TestbedDataset used by create_data.py to create data, and performance measures.
 + training.py: train a GraphDTA model.
 + models/ginconv.py, gat.py, gat_gcn.py, and gcn.py: proposed models GINConvNet, GATNet, GAT_GCN, and GCNNet receiving graphs as input for drugs.
+
+### Preprocessing:
+
+### Post-hoc analysis:
 
 # Step-by-step running:
 
@@ -33,8 +37,9 @@ pip install torch-sparse==latest+cu101 -f https://pytorch-geometric.com/whl/torc
 pip install torch-cluster==latest+cu101 -f https://pytorch-geometric.com/whl/torch-1.4.0.html
 pip install torch-spline-conv==latest+cu101 -f https://pytorch-geometric.com/whl/torch-1.4.0.html
 pip install torch-geometric
-
 ```
++ This repository contains ```requirements.txt``` and ```environment.yml``` files for environment creation.
++ preprocessing/FRI/ contains ```fri_requirements.txt``` and ```fri_environment.yml``` for DeepFRI installation, based on the instructions at https://github.com/flatironinstitute/DeepFRI?tab=readme-ov-file#dependencies
 
 ## 1. Create data in pytorch format
 Running
