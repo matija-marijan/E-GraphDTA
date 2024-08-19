@@ -208,10 +208,10 @@ if __name__ == "__main__":
     color3 = "black"
 
     # Plot the latent variable projections
-    plt.plot(emb_proj_x, emb_proj_y, '.', color=color1, alpha=1, label='Proteins', zorder = 1)
+    plt.plot(emb_proj_x, emb_proj_y, '.', color=color1, alpha=1, label='Protein embedding projections', zorder = 1)
 
     # Plot the latent variable singular vectors
-    plt.plot(emb_vectors[:, 0], emb_vectors[:, 1], '^', color=color2, alpha=1, label='Latent Embeddings', zorder=2)
+    plt.plot(emb_vectors[:, 0], emb_vectors[:, 1], '^', color=color2, alpha=1, label='Protein embedding singular vectors', zorder=2)
     
     # Calculate the Euclidean distance from (0, 0) for each point
     distances = np.sqrt(emb_vectors[:, 0]**2 + emb_vectors[:, 1]**2)
@@ -227,14 +227,14 @@ if __name__ == "__main__":
 
     # Add arrows for protein descriptors
     for i in range(all_params.shape[1]):
-        arrows = plt.arrow(0, 0, param_vectors[i, 0], param_vectors[i, 1], color=color3, alpha=1, linewidth=1.25, head_width=0.0125, head_length=0.0125, zorder = 4)
+        arrows = plt.arrow(0, 0, param_vectors[i, 0], param_vectors[i, 1], color=color3, alpha=1, linewidth=1.5, head_width=0.015, head_length=0.0125, zorder = 4)
         # arrows.set_path_effects([path_effects.Stroke(linewidth=2, foreground=color3), path_effects.Normal()])
 
     # Calculate the Euclidean distance from (0, 0) for each arrow endpoint
     distances = np.sqrt(param_vectors[:, 0]**2 + param_vectors[:, 1]**2)
 
     # Find the indices of the three/four farthest arrows
-    farthest_indices = np.argsort(distances)[-4:]
+    farthest_indices = np.argsort(distances)[-3:]
 
     # Circle the two farthest arrows and add text with their indices
     for i in farthest_indices:
@@ -245,22 +245,22 @@ if __name__ == "__main__":
     # Create a custom legend for descriptors
     handles = [
         plt.Line2D([0], [0], marker='.', color='w', markerfacecolor=color1, markersize=10, label='Protein embedding projections'),
-        plt.Line2D([0], [0], marker='^', color='w', markerfacecolor=color2, markersize=10, label='Protein parameter projections'),
+        plt.Line2D([0], [0], marker='^', color='w', markerfacecolor=color2, markersize=10, label='Protein embedding singular vectors'),
         plt.Line2D([0], [0], color=color3, lw=2, label='Protein parameter singular vectors'),
     ]
 
-    plt.xlabel('CCA1')
-    plt.ylabel('CCA2')
-    plt.title(f'{model_st} Redundancy Analysis Triplot on the {dataset} dataset')
+    plt.xlabel('CCA1', fontsize=12)
+    plt.ylabel('CCA2', fontsize=12)
+    plt.title(f'{model_st} Redundancy Analysis Triplot on the {dataset} dataset', fontsize=14)
     plt.legend(handles=handles, loc='upper right', fontsize=12)
     plt.grid(True)
     plt.gca().set_aspect('equal', adjustable='box')
-    plt.xlim(-1.5, 1.5)
-    plt.ylim(-1.5, 1.5)
+    plt.xlim(-1.25, 1.25)
+    plt.ylim(-1.25, 1.25)
     # plt.xlim(-1, 1)
     # plt.ylim(-1, 1)
     # plt.show()
-    plt.savefig(f'images/interpretability/{model_st}_{dataset}{mutation}_CCA.png', dpi=300)
+    plt.savefig(f'interpretability/{model_st}_{dataset}{mutation}_CCA.png', dpi=300, bbox_inches='tight')
     # plt.savefig(f'images/interpretability/{model_st}_{dataset}{mutation}_CCA_annot.png', dpi=100)
 
 
