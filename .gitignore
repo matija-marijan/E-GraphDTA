@@ -7,21 +7,21 @@ data/*.csv
 # data/processed/davis_train.pt
 # data/processed/kiba_test.pt
 # data/processed/kiba_train.pt
-data/processed/*
+data/processed/
 data/davis/other
 data/kiba/other
 data/combined data/
-wandb/*
-other/*
-results/old
-results/validation*
-*.pt
+wandb/
+other/
+trained_models/old
+trained_models/validation*
 __pycache__/
 models/other
 *.sh
-trained_models/
 predictions/
-post hoc/
+post_hoc/
 models/flag/
 interpretability/
 images/
+preprocessing/ESM/*.pt
+preprocessing/FRI/trained_models/
