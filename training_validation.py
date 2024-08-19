@@ -156,8 +156,8 @@ if __name__ == "__main__":
         best_test_ci = 0
         best_epoch = -1
         best_val_epoch = -1
-        model_file_name = 'results/validation_model_' + model_st + '_' + dataset +  '.model'
-        result_file_name = 'results/validation_result_' + model_st + '_' + dataset +  '.csv'
+        model_file_name = 'trained_models/validation_model_' + model_st + '_' + dataset +  '.model'
+        result_file_name = 'trained_models/validation_result_' + model_st + '_' + dataset +  '.csv'
         # for epoch in range(NUM_EPOCHS):
         #     train(model, device, train_loader, optimizer, epoch+1)
         #     print('predicting for valid data')

@@ -191,8 +191,8 @@ if __name__ == "__main__":
         optimizer = torch.optim.Adam(model.parameters(), lr=LR)
         best_mse = 1000
         best_epoch = -1
-        model_file_name = 'results/training_model_' + model_st + '_' + dataset +  '.model'
-        result_file_name = 'results/training_result_' + model_st + '_' + dataset +  '.csv'
+        model_file_name = 'trained_models/training_model_' + model_st + '_' + dataset +  '.model'
+        result_file_name = 'trained_models/training_result_' + model_st + '_' + dataset +  '.csv'
         for epoch in range(NUM_EPOCHS):
             train(model, device, train_loader, optimizer, epoch+1)
             G,P = predicting(model, device, test_loader)
