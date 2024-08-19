@@ -202,7 +202,7 @@ if __name__ == "__main__":
     plt.suptitle(f'{model_st} Prediction Error for {dataset}{mutation} Test Data')
     plt.tight_layout()
     # plt.show()
-    plt.savefig(f'images/error contribution/a{model_st}_{dataset}{mutation}_errors.png', dpi=500)
+    plt.savefig(f'images/error contribution/{model_st}_{dataset}{mutation}_errors.png', dpi=500)
 
 # TO-DO:
 # load model - done
