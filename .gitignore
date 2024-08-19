@@ -24,4 +24,5 @@ models/flag/
 interpretability/
 images/
 preprocessing/ESM/*.pt
-preprocessing/FRI/trained_models/
+preprocessing/FRI/trained_models/Deep*
+preprocessing/FRI/trained_models/*.hdf5

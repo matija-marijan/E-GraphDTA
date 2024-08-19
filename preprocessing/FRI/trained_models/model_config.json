@@ -1,0 +1,22 @@
+{
+ "cnn": {
+  "gcn": false,
+  "layer_name": "CNN_concatenate",
+  "models": {
+   "ec": "preprocessing/FRI/trained_models/DeepCNN-MERGED_enzyme_commission",
+   "mf": "preprocessing/FRI/trained_models/DeepCNN-MERGED_molecular_function",
+   "bp": "preprocessing/FRI/trained_models/DeepCNN-MERGED_biological_process",
+   "cc": "preprocessing/FRI/trained_models/DeepCNN-MERGED_cellular_component"
+  }
+ },
+ "gcn": {
+  "gcn": true,
+  "layer_name": "GCNN_concatenate",
+  "models": {
+   "mf": "preprocessing/FRI/trained_models/DeepFRI-MERGED_MultiGraphConv_3x512_fcd_1024_ca_10A_molecular_function",
+   "bp": "preprocessing/FRI/trained_models/DeepFRI-MERGED_MultiGraphConv_3x512_fcd_2048_ca_10A_biological_process",
+   "cc": "preprocessing/FRI/trained_models/DeepFRI-MERGED_MultiGraphConv_3x512_fcd_1024_ca_10A_cellular_component",
+   "ec": "preprocessing/FRI/trained_models/DeepFRI-MERGED_MultiGraphConv_3x512_fcd_1024_ca_10A_enzyme_commission"
+  }
+ }
+}

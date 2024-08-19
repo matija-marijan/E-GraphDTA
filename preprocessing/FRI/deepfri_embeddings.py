@@ -8,12 +8,11 @@ tf.get_logger().setLevel("ERROR")
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 import json
-from deepfrier.Predictor import Predictor
+from .deepfrier.Predictor import Predictor
 import pandas as pd
 import numpy as np
 
-path = '/home/matijamarijan/projects/GraphDTA/'
-model_config = '/home/matijamarijan/projects/GraphDTA/trained_models/model_config.json'
+model_config = 'preprocessing/FRI/trained_models/model_config.json'
 ont = 'cc'
 emb_layer = 'global_max_pooling1d'
 
@@ -27,13 +26,13 @@ predictor = Predictor(models[ont], gcn = gcn)
 
 datasets = ['davis', 'kiba']
 for dataset in datasets:
-    processed_proteins_train = path + 'data/' + dataset + '_deepfri_train.csv'
-    processed_proteins_test = path + 'data/' + dataset + '_deepfri_test.csv'
+    processed_proteins_train = 'data/' + dataset + '_deepfri_train.csv'
+    processed_proteins_test = 'data/' + dataset + '_deepfri_test.csv'
     if ((not os.path.isfile(processed_proteins_train)) or (not os.path.isfile(processed_proteins_test))):
 
         predictor = Predictor(models[ont], gcn=gcn)
         
-        df = pd.read_csv(path + 'data/' + dataset + '_train.csv')
+        df = pd.read_csv('data/' + dataset + '_train.csv')
         train_prots = list(df['target_sequence'])
         embeddings = []
         # DeepFRI protein representation
@@ -45,7 +44,7 @@ for dataset in datasets:
         print('train embeddings done')
         train_prots = np.asarray(embeddings)
 
-        df = pd.read_csv(path + 'data/' + dataset + '_test.csv')
+        df = pd.read_csv('data/' + dataset + '_test.csv')
         test_prots = list(df['target_sequence'])
         embeddings = []
         # DeepFRI protein representation
