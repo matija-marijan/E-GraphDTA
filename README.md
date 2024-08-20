@@ -99,7 +99,7 @@ python training_validation.py -d davis -m ESM_GINConvNet
 ```
 The validation script saves the best overall model checkpoint with the lowest MSE on the testing data, and continually outputs MSE on validation data, and MSE, RMSE, Spearman correlation, and Pearson correlation values on the testing data. It also calculates the Concordance Index on the test data for the best overall model at the end of training. 
 
-## 3. Analysis:
+## 3. Analysis
 The analysis/ folder contains various scripts for post-hoc analysis options:
 + Perform inference on a trained model using testing data:
   ```
