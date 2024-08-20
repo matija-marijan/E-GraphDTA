@@ -26,13 +26,13 @@ pip install fair-esm
 + The preprocessing steps required to run and extract embeddings from DeepFRI models run in a different and incompatible environment to ```geometric```.
 + preprocessing/FRI/ contains ```fri_requirements.txt``` and ```fri_environment.yml``` files for DeepFRI environment creation. These requirements can be installed using ```pip install fri_requirements.txt``` or ```conda env create -f fri_environment.yml```, from ```cd preprocessing/FRI```. Additionally, the DeepFRI environment can be installed using ```pip install .``` from ```cd preprocessing/FRI```.
 
-# Resources:
+# Resources
 
 ## Datasets
 + data/davis/, data/kiba/ contain the Davis and KIBA drug-target interaction datasets. These file were downloaded from [DeepDTA](https://github.com/hkmztrk/DeepDTA/tree/master/data).
 + data/davis/new_proteins.json contains the updated version of the proteins from the Davis dataset, which have been accounted for mutations. This file was created with data downloaded from [DTITR](https://github.com/larngroup/DTITR/blob/main/data/davis/dataset/davis_dataset_processed.csv).
 
-## Proposed Models:
+## Proposed Models
 All the proposed models, along with GraphDTA models can be found in the models/ folder. All proposed models are built on top of the GraphDTA GIN model variant, and include:
 + **PDD** (Protein-Drug Concatenation): Incorporates drug information in the protein representation learning channel, by concatenating the drug latent vector to each amino acid embedding latent vector:
   <p align="center">
