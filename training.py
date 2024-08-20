@@ -21,7 +21,7 @@ from models.flag.flag_pdd_vnoc_ginconv import Flag_PDD_Vnoc_GINConvNet
 from models.flag.flag_esm_ginconv import Flag_ESM_GINConvNet
 from models.flag.flag_fri_ginconv import Flag_FRI_GINConvNet
 
-import wandb
+# import wandb
 import random
 from utils import *
 import argparse
@@ -43,7 +43,7 @@ def train(model, device, train_loader, optimizer, epoch):
                                                                            len(train_loader.dataset),
                                                                            100. * batch_idx / len(train_loader),
                                                                            loss.item()))
-    wandb.log({"loss": loss.item()}, commit=False)
+    # wandb.log({"loss": loss.item()}, commit=False)
 def predicting(model, device, loader):
     model.eval()
     total_preds = torch.Tensor()
@@ -151,7 +151,7 @@ NUM_EPOCHS = 1000
 print('Learning rate: ', LR)
 print('Epochs: ', NUM_EPOCHS)
 
-wandb.init(project = 'GraphDTA', config={"architecture": model_st, "dataset": datasets[0], "mutation": args.mutation})
+# wandb.init(project = 'GraphDTA', config={"architecture": model_st, "dataset": datasets[0], "mutation": args.mutation})
 
 # Main program: Train on specified dataset
 if __name__ == "__main__":
@@ -197,7 +197,7 @@ if __name__ == "__main__":
             train(model, device, train_loader, optimizer, epoch+1)
             G,P = predicting(model, device, test_loader)
             ret = [rmse(G,P),mse(G,P),pearson(G,P),spearman(G,P)]
-            wandb.log({"rmse": ret[0], "mse": ret[1], "pearson": ret[2], "spearman": ret[3]})
+            # wandb.log({"rmse": ret[0], "mse": ret[1], "pearson": ret[2], "spearman": ret[3]})
             if ret[1]<best_mse:
                 torch.save(model.state_dict(), model_file_name)
                 best_epoch = epoch+1
@@ -220,6 +220,6 @@ if __name__ == "__main__":
         print('pearson = ', ret[2])
         print('spearman = ', ret[3])
         print('ci = ', ret[4])
-        wandb.log({"ci": ret[4]})
+        # wandb.log({"ci": ret[4]})
 
-wandb.finish()
+# wandb.finish()

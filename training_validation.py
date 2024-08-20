@@ -108,7 +108,7 @@ NUM_EPOCHS = 1000
 print('Learning rate: ', LR)
 print('Epochs: ', NUM_EPOCHS)
 
-wandb.init(project = 'GraphDTA - Validation', config={"architecture": model_st, "dataset": datasets[0]})
+# wandb.init(project = 'GraphDTA - Validation', config={"architecture": model_st, "dataset": datasets[0]})
 
 # Main program: Train and validate on specified dataset
 if __name__ == "__main__":
@@ -170,7 +170,7 @@ if __name__ == "__main__":
         #         print('predicting for test data')
         #         G,P = predicting(model, device, test_loader)
         #         ret = [rmse(G,P),mse(G,P),pearson(G,P),spearman(G,P)]
-        #         wandb.log({"val_mse": val, "rmse": ret[0], "mse": ret[1], "pearson": ret[2], "spearman": ret[3]})
+        #         # wandb.log({"val_mse": val, "rmse": ret[0], "mse": ret[1], "pearson": ret[2], "spearman": ret[3]})
         #         with open(result_file_name,'w') as f:
         #             f.write(','.join(map(str,ret)))
         #         best_test_mse = ret[1]
@@ -179,7 +179,7 @@ if __name__ == "__main__":
         #         print('mse improved at epoch ', best_epoch, '; best_test_mse: ', best_test_mse,model_st,dataset)
         #         print('*****')
         #     else:
-        #         wandb.log({"val_mse": val})
+        #         # wandb.log({"val_mse": val})
         #         print(val,'No improvement since epoch ', best_epoch, '; best_test_mse: ', best_test_mse,model_st,dataset)
 
         for epoch in range(NUM_EPOCHS):
@@ -193,7 +193,7 @@ if __name__ == "__main__":
             G,P = predicting(model, device, test_loader)
             ret = [rmse(G,P),mse(G,P),pearson(G,P),spearman(G,P)]
 
-            wandb.log({"val_mse": val, "rmse": ret[0], "mse": ret[1], "pearson": ret[2], "spearman": ret[3]})
+            # wandb.log({"val_mse": val, "rmse": ret[0], "mse": ret[1], "pearson": ret[2], "spearman": ret[3]})
             if val < best_mse:
                 best_mse = val
                 best_val_epoch = epoch+1
@@ -229,6 +229,6 @@ if __name__ == "__main__":
         print('pearson = ', ret[2])
         print('spearman = ', ret[3])
         print('ci = ', ret[4])
-        wandb.log({"ci": ret[4]})
+        # wandb.log({"ci": ret[4]})
 
-wandb.finish()
+# wandb.finish()
