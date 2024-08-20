@@ -174,7 +174,7 @@ if __name__ == "__main__":
 
     # Save embeddings to a CSV file
     embeddings_np = torch.cat(embeddings).numpy()
-    np.savetxt(f'analysis/interpretability/protein_embeddings/test/{dataset}{mutation}_{model_st}_embeddings.csv', embeddings_np, delimiter=',')
+    np.savetxt(f'analysis/interpretability/protein_embeddings/{dataset}{mutation}_{model_st}_embeddings.csv', embeddings_np, delimiter=',')
 
 # TO-DO:
 # load model - done
