@@ -29,12 +29,22 @@ pip install fair-esm
 # Resources:
 
 ## Datasets
-+ data/davis/\*, data/kiba/\* contain the Davis and KIBA drug-target interaction datasets. These file were downloaded from [DeepDTA](https://github.com/hkmztrk/DeepDTA/tree/master/data).
++ data/davis/, data/kiba/ contain the Davis and KIBA drug-target interaction datasets. These file were downloaded from [DeepDTA](https://github.com/hkmztrk/DeepDTA/tree/master/data).
 + data/davis/new_proteins.json contains the updated version of the proteins from the Davis dataset, which have been accounted for mutations. This file was created with data downloaded from [DTITR](https://github.com/larngroup/DTITR/blob/main/data/davis/dataset/davis_dataset_processed.csv).
 
 ## Proposed Models:
-All the proposed models, along with GraphDTA models can be found in the models/ folder.
-+  
+All the proposed models, along with GraphDTA models can be found in the models/ folder. All proposed models are built on top of the GraphDTA GIN model variant, and include:
++ **PDD** (Protein-Drug Concatenation): Incorporates drug information in the protein representation learning channel, by concatenating the drug latent vector to each amino acid embedding latent vector:
+  <p align="center">
+  <img src="images/pdd.png" width="300">
+  </p>
++ **Vnoc** (Transposed Convolution): Transposes the input protein embedding matrix, and performes convolution along the original protein sequence direction:
+  <p align="center">
+  <img src="images/vnoc_new.png" width="500">
+  </p>
++ **PDD-Vnoc** (Combined Representation): Includes both innovations from the PDD and Vnoc models.
++ **ESM**: Utilizes LLM-based protein embeddings extracted during ESM preprocessing.
++ **FRI**: Utilizes LLM-based protein embeddings extracted during DeepFRI preprocessing.
 
 ## Large Language Models
 + The ESM model for extracting protein embeddings can be downloaded from [download link](https://dl.fbaipublicfiles.com/fair-esm/models/esm2_t6_8M_UR50D.pt), and should be moved to preprocessing/ESM/.
@@ -42,81 +52,81 @@ All the proposed models, along with GraphDTA models can be found in the models/ 
 
 # Usage
 
-## 1. Preprocessing ! SREDITI -x mutation flag! i cuvanje podataka!
-+ ```python create_data.py``` - Create original data in pytorch format
-+ python -m preprocessing.ESM.esm_preprocessing.py
-+ python -m preprocessing.FRI.fri
+## 1. Preprocessing
+Before training a prediction model and analyzing its results, the input datasets need to be preprocessed into PyTorch format.
++ Create original data in PyTorch format:
+  ```
+  python create_data.py
+  ```
++ Create data in PyTorch format with protein embeddings extracted from ESM:
+  ```
+  python -m preprocessing.ESM.esm_preprocessing
+  ```
++ Create data in PyTorch format with protein embeddings extracted from DeepFRI:
+  ```
+  conda activate deepfri
+  python -m preprocessing.FRI.deepfri_embeddings
+  conda deactivate
+  conda activate geometric
+  python -m preprocessing.FRI.deepfri_preprocessing
+  ```
 
+Optional arguments:
+--muation/-x: Flag for including protein sequence mutations in the Davis dataset {0 (default),  1}.
+  
+These scripts return train and test .csv files in the data/ folder, as well as train and test .pt files in the data/processed, which are to be used during training.
+  
 ## 2. Training
 A prediction model can be trained using ```python training.py``` with the following arguments:
-1. --model/-m:
-2. --dataset/-d:
-3. --cuda/-c:
-4. --seed/-s:
-5. --mutation/-x:
-The training script saves the best overall model checkpoint with the lowest testing MSE, and continually outputs MSE, RMSE, Spearman correlation, and Pearson correlation values. It also calculates the Concordance Index for the best overall model at the end of training.
+1. --model/-m: DTA model chosen for training {'PDD_GINConvNet', 'Vnoc_GINConvNet', 'PDD_Vnoc_GINConvNet', 'ESM_GINConvNet', 'FRI_GINConvNet', 'GINConvNet', 'GATNet', 'GAT_GCN', 'GCNNet'}
+2. --dataset/-d: Dataset chosen for training {'davis', 'kiba'}.
+3. --cuda/-c: CUDA device index (default: 0).
+4. --seed/-s: Random seed for reproducibility.
+5. --mutation/-x: Flag for including protein sequence mutations in the Davis dataset {0 (default, 1}
+
 Example use:
+  ```
+  python training.py -d davis -m PDD_Vnoc_GINConvNet -s 0 -x 1
+  ```
+This runs the training for the PDD-Vnoc model variant on the Davis dataset with protein sequence mutations accounted for, with 0 used as a random seed for reproducibility.
+
+The training script saves the best overall model checkpoint with the lowest MSE on the testing data, and continually outputs MSE on the training data, and MSE, RMSE, Spearman correlation, and Pearson correlation values on the testing data. It also calculates the Concordance Index on the test data for the best overall model at the end of training.
+
+### Validation
+A prediction model can also be trained using a three-way dataset split, with 60% used for training, 20% for validation, and 20% for testing, using the following command with the same arguments as listed above:
 ```
-python training.py -d davis -m PDD_Vnoc_GINConvNet -s 0 -x 1
+python training_validation.py -d davis -m ESM_GINConvNet
 ```
+The validation script saves the best overall model checkpoint with the lowest MSE on the testing data, and continually outputs MSE on validation data, and MSE, RMSE, Spearman correlation, and Pearson correlation values on the testing data. It also calculates the Concordance Index on the test data for the best overall model at the end of training. 
 
+## 3. Analysis:
+The analysis/ folder contains various scripts for post-hoc analysis options:
++ Perform inference on a trained model using testing data:
+  ```
+  python -m analysis.prediction -d kiba -m Vnoc_GINConvNet -s 0
+  ```
+  This code saves the results in .csv format in the analysis/predictions/ folder. Uses identical arguments as ```training.py``` for dataset, model, CUDA device, random seed, and mutation flag selection.
++ Calculate total median absolute error contribution of drugs and proteins, for calculated predictions:
+  ```
+  python -m analysis.error_contribution -d davis -m FRI_GINConvNet
+  ```
+  This code saves figures for the drug and protein contributors to total prediction error as .png files in the images/error contribution/ folder. Additionally, this code saves the top 10 drug and protein contributors to total prediction error as .json files in the analysis/prediction/annotations folder.
++ Perform protein embedding interpretability analysis:
 
-### Source codes:
-+ create_data.py: create data in pytorch format
-+ utils.py: include TestbedDataset used by create_data.py to create data, and performance measures.
-+ training.py: train a GraphDTA model.
-+ models/ginconv.py, gat.py, gat_gcn.py, and gcn.py: proposed models GINConvNet, GATNet, GAT_GCN, and GCNNet receiving graphs as input for drugs.
+  Extract protein parameters from [ProtParam](https://web.expasy.org/protparam/):
+  ```
+  python -m analysis.protein_characteristics
+  ```
+  This saves the extracted 30 protein parameters for the testing set in a .csv file in the analysis/interpretability/protein_parameters/ folder.
+  
+  Extract protein embeddings from final protein representation learning layers:
+  ```
+  python -m analysis.extract_embeddings -d kiba -m PDD_GINConvNet
+  ```
+  This saves the extracted 128-dimensional protein embeddings for the testing set in a .csv file in the analysis/interpretability/protein_embeddings/ folder. This code uses arguments for dataset, model, CUDA device, random seed, and protein sequence mutation flag selection.
 
-### Preprocessing:
-
-### Post-hoc analysis:
-
-# Step-by-step running:
-
-## 1. Create data in pytorch format
-Running
-```sh
-conda activate geometric
-python create_data.py
-```
-This returns kiba_train.csv, kiba_test.csv, davis_train.csv, and davis_test.csv, saved in data/ folder. These files are in turn input to create data in pytorch format,
-stored at data/processed/, consisting of  kiba_train.pt, kiba_test.pt, davis_train.pt, and davis_test.pt.
-
-## 2. Train a prediction model
-To train a model using training data. The model is chosen if it gains the best MSE for testing data.  
-Running 
-
-```sh
-conda activate geometric
-python training.py 0 0 0
-```
-
-where the first argument is for the index of the datasets, 0/1 for 'davis' or 'kiba', respectively;
- the second argument is for the index of the models, 0/1/2/3 for GINConvNet, GATNet, GAT_GCN, or GCNNet, respectively;
- and the third argument is for the index of the cuda, 0/1 for 'cuda:0' or 'cuda:1', respectively. 
- Note that your actual CUDA name may vary from these, so please change the following code accordingly:
-```sh
-cuda_name = "cuda:0"
-if len(sys.argv)>3:
-    cuda_name = "cuda:" + str(int(sys.argv[3])) 
-```
-
-This returns the model and result files for the modelling achieving the best MSE for testing data throughout the training.
-For example, it returns two files model_GATNet_davis.model and result_GATNet_davis.csv when running GATNet on Davis data.
-
-## 3. Train a prediction model with validation 
-
-In "3. Train a prediction model", a model is trained on training data and chosen when it gains the best MSE for testing data.
-This follows how a model was chosen in https://github.com/hkmztrk/DeepDTA. The result by two ways of training is comparable though.
-
-In this section, a model is trained on 80% of training data and chosen if it gains the best MSE for validation data, 
-which is 20% of training data. Then the model is used to predict affinity for testing data.
-
-Same arguments as in "3. Train a prediction model" are used. E.g., running 
-
-```sh
-python training_validation.py 0 0 0
-```
-
-This returns the model achieving the best MSE for validation data throughout the training and performance results of the model on testing data.
-For example, it returns two files model_GATNet_davis.model and result_GATNet_davis.csv when running GATNet on Davis data.
+  Perform canonical correlation analysis between the extracted protein embeddings and parameters:
+  ```
+  python -m analysis.interpretability -d davis -m ESM_GINConvNet -x 1
+  ```
+  This saves a 2-dimensional plot of the CCA projections and singular vectors of the embeddings and parameters, to a .png file in the analysis/interpretability/ folder. This script uses arguments for dataset, model, and protein mutation flag selection.
