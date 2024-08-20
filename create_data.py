@@ -7,6 +7,7 @@ from rdkit import Chem
 from rdkit.Chem import MolFromSmiles
 import networkx as nx
 from utils import *
+import argparse
 
 def atom_features(atom):
     return np.array(one_of_k_encoding_unk(atom.GetSymbol(),['C', 'N', 'O', 'S', 'F', 'Si', 'P', 'Cl', 'Br', 'Mg', 'Na','Ca', 'Fe', 'As', 'Al', 'I', 'B', 'V', 'K', 'Tl', 'Yb','Sb', 'Sn', 'Ag', 'Pd', 'Co', 'Se', 'Ti', 'Zn', 'H','Li', 'Ge', 'Cu', 'Au', 'Ni', 'Cd', 'In', 'Mn', 'Zr','Cr', 'Pt', 'Hg', 'Pb', 'Unknown']) +
@@ -50,20 +51,35 @@ def seq_cat(prot):
     x = np.zeros(max_seq_len)
     for i, ch in enumerate(prot[:max_seq_len]): 
         x[i] = seq_dict[ch]
-    return x  
+    return x
 
+parser = argparse.ArgumentParser(description="Run a specific model on a specific dataset.")
+
+parser.add_argument('-x', '--mutation', type=int, default = 0, choices = {0, 1},
+                    help="Flag for including protein sequence mutations (1) for the Davis dataset (default: 0).")  
+
+args = parser.parse_args()
+
+if args.mutation == 0:
+    mutation = ''
+elif args.mutation == 1:
+    mutation = '_mutation'
 
 # from DeepDTA data
 all_prots = []
-datasets = ['kiba','davis']
-for dataset in datasets:
+dt_name = ['kiba', 'davis']
+datasets = ['kiba','davis'+ mutation]
+for name, dataset in zip(dt_name, datasets):
     print('convert data from DeepDTA for ', dataset)
-    fpath = 'data/' + dataset + '/'
+    fpath = 'data/' + name + '/'
     train_fold = json.load(open(fpath + "folds/train_fold_setting1.txt"))
     train_fold = [ee for e in train_fold for ee in e ]
     valid_fold = json.load(open(fpath + "folds/test_fold_setting1.txt"))
     ligands = json.load(open(fpath + "ligands_can.txt"), object_pairs_hook=OrderedDict)
-    proteins = json.load(open(fpath + "proteins.txt"), object_pairs_hook=OrderedDict)
+    if dataset == 'davis_mutation':
+        proteins = json.load(open(fpath + "new_proteins.json"), object_pairs_hook=OrderedDict)
+    else:
+        proteins = json.load(open(fpath + "proteins.txt"), object_pairs_hook=OrderedDict)
     affinity = pickle.load(open(fpath + "Y","rb"), encoding='latin1')
     drugs = []
     prots = []
@@ -72,7 +88,7 @@ for dataset in datasets:
         drugs.append(lg)
     for t in proteins.keys():
         prots.append(proteins[t])
-    if dataset == 'davis':
+    if name == 'davis':
         affinity = [-np.log10(y/1e9) for y in affinity]
     affinity = np.asarray(affinity)
     opts = ['train','test']
@@ -103,7 +119,7 @@ seq_dict_len = len(seq_dict)
 max_seq_len = 1000
 
 compound_iso_smiles = []
-for dt_name in ['kiba','davis']:
+for dt_name in ['kiba', 'davis' + mutation]:
     opts = ['train','test']
     for opt in opts:
         df = pd.read_csv('data/' + dt_name + '_' + opt + '.csv')
@@ -114,7 +130,7 @@ for smile in compound_iso_smiles:
     g = smile_to_graph(smile)
     smile_graph[smile] = g
 
-datasets = ['davis','kiba']
+datasets = ['davis' + mutation, 'kiba']
 # convert to PyTorch data format
 for dataset in datasets:
     processed_data_file_train = 'data/processed/' + dataset + '_train.pt'

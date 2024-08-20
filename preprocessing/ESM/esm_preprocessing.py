@@ -5,6 +5,7 @@ import esm
 from rdkit import Chem
 import networkx as nx
 from utils import *
+import argparse
 
 def atom_features(atom):
     return np.array(one_of_k_encoding_unk(atom.GetSymbol(),['C', 'N', 'O', 'S', 'F', 'Si', 'P', 'Cl', 'Br', 'Mg', 'Na','Ca', 'Fe', 'As', 'Al', 'I', 'B', 'V', 'K', 'Tl', 'Yb','Sb', 'Sn', 'Ag', 'Pd', 'Co', 'Se', 'Ti', 'Zn', 'H','Li', 'Ge', 'Cu', 'Au', 'Ni', 'Cd', 'In', 'Mn', 'Zr','Cr', 'Pt', 'Hg', 'Pb', 'Unknown']) +
@@ -44,8 +45,20 @@ def smile_to_graph(smile):
         
     return c_size, features, edge_index
 
+parser = argparse.ArgumentParser(description="Run a specific model on a specific dataset.")
+
+parser.add_argument('-x', '--mutation', type=int, default = 0, choices = {0, 1},
+                    help="Flag for including protein sequence mutations (1) for the Davis dataset (default: 0).")  
+
+args = parser.parse_args()
+
+if args.mutation == 0:
+    mutation = ''
+elif args.mutation == 1:
+    mutation = '_mutation'
+
 compound_iso_smiles = []
-for dt_name in ['kiba','davis']:
+for dt_name in ['kiba','davis' + mutation]:
     opts = ['train','test']
     for opt in opts:
         df = pd.read_csv('data/' + dt_name + '_' + opt + '.csv')
@@ -59,10 +72,10 @@ for smile in compound_iso_smiles:
 
 ########################### PROTEIN PROCESSING ###########################
 
-datasets = ['davis', 'kiba']
+datasets = ['davis' + mutation, 'kiba']
 for dataset in datasets:
 
-    if dataset == 'davis':
+    if dataset == ('davis' + mutation):
         batch_size = 4
     elif dataset == 'kiba':
         batch_size = 1
@@ -164,7 +177,7 @@ for dataset in datasets:
 
 ######################## PYTORCH FILE FORMATTING #########################
 
-datasets = ['davis', 'kiba']
+datasets = ['davis' + mutation, 'kiba']
 for dataset in datasets:
     processed_data_file_train = 'data/processed/' + dataset + '_esm_train.pt'
     processed_data_file_test = 'data/processed/' + dataset + '_esm_test.pt'

@@ -11,6 +11,19 @@ import json
 from .deepfrier.Predictor import Predictor
 import pandas as pd
 import numpy as np
+import argparse
+
+parser = argparse.ArgumentParser(description="Run a specific model on a specific dataset.")
+
+parser.add_argument('-x', '--mutation', type=int, default = 0, choices = {0, 1},
+                    help="Flag for including protein sequence mutations (1) for the Davis dataset (default: 0).")  
+
+args = parser.parse_args()
+
+if args.mutation == 0:
+    mutation = ''
+elif args.mutation == 1:
+    mutation = '_mutation'
 
 model_config = 'preprocessing/FRI/trained_models/model_config.json'
 ont = 'cc'
@@ -24,7 +37,7 @@ gcn = params['gcn']
 models = params['models']
 predictor = Predictor(models[ont], gcn = gcn)
 
-datasets = ['davis', 'kiba']
+datasets = ['davis' + mutation, 'kiba']
 for dataset in datasets:
     processed_proteins_train = 'data/' + dataset + '_deepfri_train.csv'
     processed_proteins_test = 'data/' + dataset + '_deepfri_test.csv'
