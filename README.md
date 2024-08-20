@@ -5,7 +5,7 @@ Implementation of five novel protein representation models on top of GraphDTA's 
 3. Predicting protein representations using Large Language Models, which include [Evolutionary Scale Modeling](https://github.com/facebookresearch/esm) and [Functional Residue Identification](https://github.com/flatironinstitute/DeepFRI).
 
 <p align="center">
-<img src="images/diagrams/pipeline.png" width="800">
+<img src="images/pipeline.png" width="800">
 </p> 
 
 # Installation
