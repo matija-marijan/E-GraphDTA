@@ -1,15 +1,65 @@
 # P-GraphDTA: Enhanced protein representations improve drug–target binding affinity prediction
-Implementation of different protein representation models on top of GraphDTA's drug graph neural network processing methods.
+Implementation of five novel protein representation models on top of GraphDTA's drug graph neural network processing methods for predicting the binding affinity of drug-target pairs. The proposed methods revolve around three key concepts of protein sequence representation and interpretation:
+1. Incorporating information about the drug into the target representation
+2. Redefining protein embedding convolution layers
+3. Predicting protein representations using Large Language Models, which include [Evolutionary Scale Modeling](https://github.com/facebookresearch/esm) and [Functional Residue Identification](https://github.com/flatironinstitute/DeepFRI).
 
 <p align="center">
 <img src="images/diagrams/pipeline.png" width="800">
 </p> 
 
-### Resources:
+# Installation
+All environments and source codes were created and tested in a Linux environment.
+## GraphDTA environment
+```
+conda create -n geometric python=3
+conda activate geometric
+conda install -y -c conda-forge rdkit
+conda install pytorch torchvision -c pytorch
+pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.2.1+cu118.html
+pip install torch-geometric
+conda install cudatoolkit -c conda-forge
+pip install fair-esm
+```
++ Additionally, this repository contains ```requirements.txt``` and ```environment.yml``` files for environment creation. These requirements can be installed using ```pip install requirements.txt``` or ```conda env create -f environment.yml```.
+## DeepFRI environment
++ The preprocessing steps required to run and extract embeddings from DeepFRI models run in a different and incompatible environment to ```geometric```.
++ preprocessing/FRI/ contains ```fri_requirements.txt``` and ```fri_environment.yml``` files for DeepFRI environment creation. These requirements can be installed using ```pip install fri_requirements.txt``` or ```conda env create -f fri_environment.yml```, from ```cd preprocessing/FRI```. Additionally, the DeepFRI environment can be installed using ```pip install .``` from ```cd preprocessing/FRI```.
 
-+ README.md: this file.
-+ data/davis/\*, data/kiba/\* - These file were downloaded from https://github.com/hkmztrk/DeepDTA/tree/master/data
-+ data/davis/new_proteins.json - This file was created with data from https://github.com/larngroup/DTITR/blob/main/data/davis/dataset/davis_dataset_processed.csv
+# Resources:
+
+## Datasets
++ data/davis/\*, data/kiba/\* contain the Davis and KIBA drug-target interaction datasets. These file were downloaded from [DeepDTA](https://github.com/hkmztrk/DeepDTA/tree/master/data).
++ data/davis/new_proteins.json contains the updated version of the proteins from the Davis dataset, which have been accounted for mutations. This file was created with data downloaded from [DTITR](https://github.com/larngroup/DTITR/blob/main/data/davis/dataset/davis_dataset_processed.csv).
+
+## Proposed Models:
+All the proposed models, along with GraphDTA models can be found in the models/ folder.
++  
+
+## Large Language Models
++ The ESM model for extracting protein embeddings can be downloaded from [download link](https://dl.fbaipublicfiles.com/fair-esm/models/esm2_t6_8M_UR50D.pt), and should be moved to preprocessing/ESM/.
++ The DeepFRI models can be downloaded from [download link](https://users.flatironinstitute.org/~renfrew/DeepFRI_data/trained_models.tar.gz). The ```tar.gz``` file can be uncompressed into the preprocessing/FRI/ directory by using ```tar xvzf trained_models.tar.gz -C /path/to/GraphDTA/preprocessing/FRI```. The preprocessing/FRI/deepfrier folder contains the ```deepfrier``` modified source code from [DeepFRI](https://github.com/flatironinstitute/DeepFRI/tree/master/deepfrier), which is used for extracting embeddings during inference to create new datasets for training the updated GraphDTA models.
+
+# Usage
+
+## 1. Preprocessing ! SREDITI -x mutation flag! i cuvanje podataka!
++ ```python create_data.py``` - Create original data in pytorch format
++ python -m preprocessing.ESM.esm_preprocessing.py
++ python -m preprocessing.FRI.fri
+
+## 2. Training
+A prediction model can be trained using ```python training.py``` with the following arguments:
+1. --model/-m:
+2. --dataset/-d:
+3. --cuda/-c:
+4. --seed/-s:
+5. --mutation/-x:
+The training script saves the best overall model checkpoint with the lowest testing MSE, and continually outputs MSE, RMSE, Spearman correlation, and Pearson correlation values. It also calculates the Concordance Index for the best overall model at the end of training.
+Example use:
+```
+python training.py -d davis -m PDD_Vnoc_GINConvNet -s 0 -x 1
+```
+
 
 ### Source codes:
 + create_data.py: create data in pytorch format
@@ -22,24 +72,6 @@ Implementation of different protein representation models on top of GraphDTA's d
 ### Post-hoc analysis:
 
 # Step-by-step running:
-
-## 0. Install Python libraries needed
-+ Install pytorch_geometric following instruction at https://github.com/rusty1s/pytorch_geometric
-+ Install rdkit: conda install -y -c conda-forge rdkit
-+ Or run the following commands to install both pytorch_geometric and rdkit:
-```
-conda create -n geometric python=3
-conda activate geometric
-conda install -y -c conda-forge rdkit
-conda install pytorch torchvision cudatoolkit -c pytorch
-pip install torch-scatter==latest+cu101 -f https://pytorch-geometric.com/whl/torch-1.4.0.html
-pip install torch-sparse==latest+cu101 -f https://pytorch-geometric.com/whl/torch-1.4.0.html
-pip install torch-cluster==latest+cu101 -f https://pytorch-geometric.com/whl/torch-1.4.0.html
-pip install torch-spline-conv==latest+cu101 -f https://pytorch-geometric.com/whl/torch-1.4.0.html
-pip install torch-geometric
-```
-+ This repository contains ```requirements.txt``` and ```environment.yml``` files for environment creation.
-+ preprocessing/FRI/ contains ```fri_requirements.txt``` and ```fri_environment.yml``` for DeepFRI installation, based on the instructions at https://github.com/flatironinstitute/DeepFRI?tab=readme-ov-file#dependencies
 
 ## 1. Create data in pytorch format
 Running
