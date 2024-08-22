@@ -29,11 +29,11 @@ pip install fair-esm
 # Resources
 
 ## Datasets
-+ data/davis/, data/kiba/ contain the Davis and KIBA drug-target interaction datasets. These file were downloaded from [DeepDTA](https://github.com/hkmztrk/DeepDTA/tree/master/data).
-+ data/davis/new_proteins.json contains the updated version of the proteins from the Davis dataset, which have been accounted for mutations. This file was created with data downloaded from [DTITR](https://github.com/larngroup/DTITR/blob/main/data/davis/dataset/davis_dataset_processed.csv).
++ data/davis/, data/kiba/ contain the Davis and KIBA drug-target interaction datasets. The files were downloaded from [DeepDTA](https://github.com/hkmztrk/DeepDTA/tree/master/data).
++ data/davis/new_proteins.json contains the updated version of the protein sequences from the Davis dataset, which have been accounted for mutations. This file was created with data downloaded from [DTITR](https://github.com/larngroup/DTITR/blob/main/data/davis/dataset/davis_dataset_processed.csv).
 
 ## Proposed Models
-All the proposed models, along with GraphDTA models can be found in the models/ folder. All proposed models are built on top of the GraphDTA GIN model variant, and include:
+All of the proposed models, along with the original GraphDTA models can be found in the models/ folder. All proposed models are built on top of the GraphDTA GIN model variant, and include:
 + **PDD** (Protein-Drug Concatenation): Incorporates drug information in the protein representation learning channel, by concatenating the drug latent vector to each amino acid embedding latent vector:
   <p align="center">
   <img src="images/pdd.png" width="300">
@@ -47,8 +47,8 @@ All the proposed models, along with GraphDTA models can be found in the models/ 
 + **FRI**: Utilizes LLM-based protein embeddings extracted during DeepFRI preprocessing.
 
 ## Large Language Models
-+ The ESM model for extracting protein embeddings can be downloaded from [download link](https://dl.fbaipublicfiles.com/fair-esm/models/esm2_t6_8M_UR50D.pt), and should be moved to preprocessing/ESM/.
-+ The DeepFRI models can be downloaded from [download link](https://users.flatironinstitute.org/~renfrew/DeepFRI_data/trained_models.tar.gz). The ```tar.gz``` file can be uncompressed into the preprocessing/FRI/ directory by using ```tar xvzf trained_models.tar.gz -C /path/to/GraphDTA/preprocessing/FRI```. The preprocessing/FRI/deepfrier folder contains the ```deepfrier``` modified source code from [DeepFRI](https://github.com/flatironinstitute/DeepFRI/tree/master/deepfrier), which is used for extracting embeddings during inference to create new datasets for training the updated GraphDTA models.
++ The pretrained ESM model for extracting protein embeddings can be downloaded from [download link](https://dl.fbaipublicfiles.com/fair-esm/models/esm2_t6_8M_UR50D.pt), and should be moved to preprocessing/ESM/.
++ The pretrained DeepFRI models can be downloaded from [download link](https://users.flatironinstitute.org/~renfrew/DeepFRI_data/trained_models.tar.gz). The ```tar.gz``` file can be uncompressed into the preprocessing/FRI/ directory by using ```tar xvzf trained_models.tar.gz -C /path/to/GraphDTA/preprocessing/FRI```. The preprocessing/FRI/deepfrier folder contains the ```deepfrier``` modified source code from [DeepFRI](https://github.com/flatironinstitute/DeepFRI/tree/master/deepfrier), which is used for extracting embeddings during inference to create new datasets for training the updated GraphDTA models.
 
 # Usage
 
