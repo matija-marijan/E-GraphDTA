@@ -23,7 +23,7 @@ pip install fair-esm
 ```
 + Additionally, this repository contains ```requirements.txt``` and ```environment.yml``` files for environment creation. These requirements can be installed using ```pip install requirements.txt``` or ```conda env create -f environment.yml```.
 ## DeepFRI environment
-+ The preprocessing steps required to run and extract embeddings from DeepFRI models run in a different and incompatible environment to ```geometric```.
++ The preprocessing steps required to run and extract embeddings from DeepFRI models run in a different environment, which is not compatible with ```geometric```.
 + preprocessing/FRI/ contains ```fri_requirements.txt``` and ```fri_environment.yml``` files for DeepFRI environment creation. These requirements can be installed using ```pip install fri_requirements.txt``` or ```conda env create -f fri_environment.yml```, from ```cd preprocessing/FRI```. Additionally, the DeepFRI environment can be installed using ```pip install .``` from ```cd preprocessing/FRI```.
 
 # Resources
