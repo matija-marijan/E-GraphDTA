@@ -82,7 +82,7 @@ A prediction model can be trained using ```python training.py``` with the follow
 2. --dataset/-d: Dataset chosen for training {'davis', 'kiba'}.
 3. --cuda/-c: CUDA device index (default: 0).
 4. --seed/-s: Random seed for reproducibility.
-5. --mutation/-x: Flag for including protein sequence mutations in the Davis dataset {0 (default, 1}
+5. --mutation/-x: Flag for including protein sequence mutations in the Davis dataset {0 (default), 1}
 
 Example use:
   ```
