@@ -88,12 +88,12 @@ Example use:
   ```
   python training.py -d davis -m PDD_Vnoc_GINConvNet -s 0 -x 1
   ```
-This runs the training for the PDD-Vnoc model variant on the Davis dataset with protein sequence mutations accounted for, with 0 used as a random seed for reproducibility.
+This runs the training for the PDD-Vnoc model variant on the Davis dataset with protein sequence mutations accounted for, with 0 used as a random seed for reproducibility. The training is performed on 80% of the dataset, while the performance is evaluated on the testing 20% of data.
 
 The training script saves the best overall model checkpoint with the lowest MSE on the testing data, and continually outputs MSE on the training data, and MSE, RMSE, Spearman correlation, and Pearson correlation values on the testing data. It also calculates the Concordance Index on the test data for the best overall model at the end of training.
 
 ### Validation
-A prediction model can also be trained using a three-way dataset split, with 60% used for training, 20% for validation, and 20% for testing, using the following command with the same arguments as listed above:
+A prediction model can also be trained using a three-way dataset split with the same 80/20 split for training and testing, where 20% of the training set is used independently for validation, while the remaining 80% is used for training, using the following command with the same arguments as listed above:
 ```
 python training_validation.py -d davis -m ESM_GINConvNet
 ```
