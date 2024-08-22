@@ -1,7 +1,7 @@
 # P-GraphDTA: Enhanced protein representations improve drug–target binding affinity prediction
 Implementation of five novel protein representation models on top of GraphDTA's drug graph neural network processing methods for predicting the binding affinity of drug-target pairs. The proposed methods revolve around three key concepts of protein sequence representation and interpretation:
-1. Incorporating information about the drug into the target representation
-2. Redefining protein embedding convolution layers
+1. Incorporating information about the drug into the target representation,
+2. Redefining protein embedding convolution layers,
 3. Predicting protein representations using Large Language Models, which include [Evolutionary Scale Modeling](https://github.com/facebookresearch/esm) and [Functional Residue Identification](https://github.com/flatironinstitute/DeepFRI).
 
 <p align="center">
