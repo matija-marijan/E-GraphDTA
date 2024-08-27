@@ -184,8 +184,8 @@ if __name__ == "__main__":
     for i in range(-10, 0):  # Annotate only the top 10 highest MAE
         axs[0].annotate(drug_keys[-i - 1], (len(drug_mae) + i, drug_mae['mae'].iloc[i]), fontsize=8,
                         xytext=(-10, 0), textcoords = 'offset points', ha='right')
-    axs[0].set_xlabel('Drug')
-    axs[0].set_ylabel('Median of Absolute Errors for Affinity Prediction')
+    axs[0].set_xlabel('Drug', fontsize=12)
+    axs[0].set_ylabel('Median of Absolute Errors for Affinity Prediction', fontsize=12)
     # axs[0].set_title(f'{model_st} Prediction Error for {dataset}{mutation} Test Data')
     axs[0].set_xticks([])
 
@@ -194,12 +194,12 @@ if __name__ == "__main__":
     for i in range(-10, 0):  # Annotate only the top 10 highest MAE
         axs[1].annotate(prot_keys[-i - 1], (len(protein_mae) + i, protein_mae['mae'].iloc[i]), fontsize=8,
                         xytext=(-10, 0), textcoords = 'offset points', ha='right')
-    axs[1].set_xlabel('Protein')
+    axs[1].set_xlabel('Protein', fontsize=12)
     # axs[1].set_ylabel('Median of Absolute Errors for Affinity Prediction')
     # axs[1].set_title(f'{model_st} Prediction Error for {dataset}{mutation} Test Data')
     axs[1].set_xticks([])
     
-    plt.suptitle(f'{model_st} Prediction Error for {dataset}{mutation} Test Data')
+    plt.suptitle(f'{model_st} Prediction Error for {dataset}{mutation} Test Data', fontsize=14)
     plt.tight_layout()
     # plt.show()
     plt.savefig(f'images/error contribution/{model_st}_{dataset}{mutation}_errors.png', dpi=500)
