@@ -43,8 +43,8 @@ All of the proposed models, along with the original GraphDTA models can be found
   <img src="images/vnoc_new.png" width="500">
   </p>
 + **PDD-Vnoc** (Combined Representation): Includes both innovations from the PDD and Vnoc models.
-+ **ESM**: Utilizes LLM-based protein embeddings extracted during ESM preprocessing.
-+ **FRI**: Utilizes LLM-based protein embeddings extracted during DeepFRI preprocessing.
++ **ESM**: Utilizes precomputed LLM-based protein embeddings extracted during ESM preprocessing.
++ **FRI**: Utilizes precomputed LLM-based protein embeddings extracted during DeepFRI preprocessing.
 
 ## Large Language Models
 + The pretrained ESM model for extracting protein embeddings can be downloaded from [download link](https://dl.fbaipublicfiles.com/fair-esm/models/esm2_t6_8M_UR50D.pt), and should be moved to preprocessing/ESM/.
