@@ -38,7 +38,7 @@ All of the proposed models, along with the original GraphDTA models can be found
   <p align="center">
   <img src="images/pdd.png" width="300">
   </p>
-+ **Vnoc** (Transposed Convolution): Transposes the input protein embedding matrix, and performes convolution along the original protein sequence direction:
++ **Vnoc** (Transposed Input Convolution): Transposes the input protein embedding matrix, and performes convolution along the original protein sequence direction:
   <p align="center">
   <img src="images/vnoc_new.png" width="500">
   </p>
