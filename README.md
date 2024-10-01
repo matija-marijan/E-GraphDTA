@@ -74,7 +74,7 @@ Before training a prediction model and analyzing its results, the input datasets
   ```
 
 Optional arguments:
---muation/-x: Flag for including protein sequence mutations in the Davis dataset {0 (default),  1}.
+--mutation/-x: Flag for including protein sequence mutations in the Davis dataset {0 (default),  1}.
   
 These scripts return train and test .csv files in the data/ folder, as well as train and test .pt files in the data/processed, which are to be used during training.
   
