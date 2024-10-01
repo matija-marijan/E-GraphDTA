@@ -10,6 +10,8 @@ Implementation of five novel protein representation models on top of GraphDTA's 
 
 # Installation
 All environments and source codes were created and tested in a Linux environment.
+All scripts and model architectures can be downloaded locally using ```git clone https://github.com/matija-marijan/E-GraphDTA.git```
+
 ## GraphDTA environment
 ```
 conda create -n geometric python=3
