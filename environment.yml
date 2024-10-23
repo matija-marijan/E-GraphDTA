@@ -189,4 +189,3 @@ dependencies:
       - tqdm==4.66.4
       - wandb==0.17.0
       - yarl==1.9.4
-prefix: /home/matijamarijan/miniconda3/envs/geometric
