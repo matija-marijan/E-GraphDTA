@@ -6,11 +6,11 @@ from torch_geometric.nn import GINConv, global_add_pool
 from torch_geometric.nn import global_mean_pool as gap, global_max_pool as gmp
 
 # GINConv model + protein-drug-drug concatenation
-class PDD_GINConvNet(torch.nn.Module):
+class PDC_GINConvNet(torch.nn.Module):
     def __init__(self, n_output=1,num_features_xd=78, num_features_xt=25,
                  n_filters=32, embed_dim=128, output_dim=128, dropout=0.2):
 
-        super(PDD_GINConvNet, self).__init__()
+        super(PDC_GINConvNet, self).__init__()
 
         dim = 32
         self.dropout = nn.Dropout(dropout)

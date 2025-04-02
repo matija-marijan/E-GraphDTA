@@ -36,15 +36,15 @@ pip install fair-esm
 
 ## Proposed Models
 All of the proposed models, along with the original GraphDTA models can be found in the models/ folder. All proposed models are built on top of the GraphDTA GIN model variant, and include:
-+ **PDD** (Protein-Drug Concatenation): Incorporates drug information in the protein representation learning channel, by concatenating the drug latent vector to each amino acid embedding latent vector:
++ **PDC** (Protein-Drug Concatenation): Incorporates drug information in the protein representation learning channel, by concatenating the drug latent vector to each amino acid embedding latent vector:
   <p align="center">
-  <img src="images/pdd.png" width="300">
+  <img src="images/pdc.png" width="300">
   </p>
 + **Vnoc** (Transposed Input Convolution): Transposes the input protein embedding matrix, and performes convolution along the original protein sequence direction:
   <p align="center">
   <img src="images/vnoc_new.png" width="500">
   </p>
-+ **PDD-Vnoc** (Combined Representation): Includes both innovations from the PDD and Vnoc models.
++ **PDC-Vnoc** (Combined Representation): Includes both innovations from the PDC and Vnoc models.
 + **ESM**: Utilizes precomputed LLM-based protein embeddings extracted during ESM preprocessing.
 + **FRI**: Utilizes precomputed LLM-based protein embeddings extracted during DeepFRI preprocessing.
 
@@ -80,7 +80,7 @@ These scripts return train and test .csv files in the data/ folder, as well as t
   
 ## 2. Training
 A prediction model can be trained using ```python training.py``` with the following arguments:
-1. --model/-m: DTA model chosen for training {'PDD_GINConvNet', 'Vnoc_GINConvNet', 'PDD_Vnoc_GINConvNet', 'ESM_GINConvNet', 'FRI_GINConvNet', 'GINConvNet', 'GATNet', 'GAT_GCN', 'GCNNet'}
+1. --model/-m: DTA model chosen for training {'PDC_GINConvNet', 'Vnoc_GINConvNet', 'PDC_Vnoc_GINConvNet', 'ESM_GINConvNet', 'FRI_GINConvNet', 'GINConvNet', 'GATNet', 'GAT_GCN', 'GCNNet'}
 2. --dataset/-d: Dataset chosen for training {'davis', 'kiba'}.
 3. --cuda/-c: CUDA device index (default: 0).
 4. --seed/-s: Random seed for reproducibility.
@@ -88,9 +88,9 @@ A prediction model can be trained using ```python training.py``` with the follow
 
 Example use:
   ```
-  python training.py -d davis -m PDD_Vnoc_GINConvNet -s 0 -x 1
+  python training.py -d davis -m PDC_Vnoc_GINConvNet -s 0 -x 1
   ```
-This runs the training for the PDD-Vnoc model variant on the Davis dataset with protein sequence mutations accounted for, with 0 used as a random seed for reproducibility. The training is performed on 80% of the dataset, while the performance is evaluated on the testing 20% of data.
+This runs the training for the PDC-Vnoc model variant on the Davis dataset with protein sequence mutations accounted for, with 0 used as a random seed for reproducibility. The training is performed on 80% of the dataset, while the performance is evaluated on the testing 20% of data.
 
 The training script saves the best overall model checkpoint with the lowest MSE on the testing data, and continually outputs MSE on the training data, and MSE, RMSE, Spearman correlation, and Pearson correlation values on the testing data. It also calculates the Concordance Index on the test data for the best overall model at the end of training.
 
@@ -123,7 +123,7 @@ The analysis/ folder contains various scripts for post-hoc analysis options:
   
   Extract protein embeddings from final protein representation learning layers:
   ```
-  python -m analysis.extract_embeddings -d kiba -m PDD_GINConvNet
+  python -m analysis.extract_embeddings -d kiba -m PDC_GINConvNet
   ```
   This saves the extracted 128-dimensional protein embeddings for the testing set in a .csv file in the analysis/interpretability/protein_embeddings/ folder. This code uses arguments for dataset, model, CUDA device, random seed, and protein sequence mutation flag selection.
 
