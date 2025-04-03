@@ -2,7 +2,7 @@
 Implementation of five novel protein representation models on top of GraphDTA's drug graph neural network processing methods for predicting the binding affinity of drug-target pairs. The proposed methods revolve around three key concepts of protein sequence representation and interpretation:
 1. Incorporating information about the drug into the target representation,
 2. Redefining protein embedding convolution layers,
-3. Predicting protein representations using Large Language Models, which include [Evolutionary Scale Modeling](https://github.com/facebookresearch/esm) and [Functional Residue Identification](https://github.com/flatironinstitute/DeepFRI).
+3. Predicting protein representations using protein language models, which include [Evolutionary Scale Modeling](https://github.com/facebookresearch/esm) and [Functional Residue Identification](https://github.com/flatironinstitute/DeepFRI).
 
 <p align="center">
 <img src="images/pipeline.png" width="800">
@@ -45,10 +45,10 @@ All of the proposed models, along with the original GraphDTA models can be found
   <img src="images/vnoc_new.png" width="500">
   </p>
 + **PDC-Vnoc** (Combined Representation): Includes both innovations from the PDC and Vnoc models.
-+ **ESM**: Utilizes precomputed LLM-based protein embeddings extracted during ESM preprocessing.
-+ **FRI**: Utilizes precomputed LLM-based protein embeddings extracted during DeepFRI preprocessing.
++ **ESM**: Utilizes precomputed PLM-based protein embeddings extracted during ESM preprocessing.
++ **FRI**: Utilizes precomputed PLM-based protein embeddings extracted during DeepFRI preprocessing.
 
-## Large Language Models
+## Protein Language Models
 + The pretrained ESM model for extracting protein embeddings can be downloaded from [download link](https://dl.fbaipublicfiles.com/fair-esm/models/esm2_t6_8M_UR50D.pt), and should be moved to preprocessing/ESM/.
 + The pretrained DeepFRI models can be downloaded from [download link](https://users.flatironinstitute.org/~renfrew/DeepFRI_data/trained_models.tar.gz). The ```tar.gz``` file can be uncompressed into the preprocessing/FRI/ directory by using ```tar xvzf trained_models.tar.gz -C /path/to/GraphDTA/preprocessing/FRI```. The preprocessing/FRI/deepfrier folder contains the ```deepfrier``` modified source code from [DeepFRI](https://github.com/flatironinstitute/DeepFRI/tree/master/deepfrier), which is used for extracting embeddings during inference to create new datasets for training the updated GraphDTA models.
 
