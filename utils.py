@@ -103,9 +103,7 @@ class ESM_TestbedDataset(TestbedDataset):
             GCNData = DATA.Data(x=torch.Tensor(features),
                                 edge_index=torch.LongTensor(edge_index).transpose(1, 0),
                                 y=torch.FloatTensor([labels]))
-            # -----MATIJA-----
             GCNData.target = torch.FloatTensor([target])
-            # -----MATIJA-----
             GCNData.__setitem__('c_size', torch.LongTensor([c_size]))
             # append graph, label and target sequence to data list
             data_list.append(GCNData)

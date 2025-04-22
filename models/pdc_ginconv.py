@@ -73,7 +73,6 @@ class PDC_GINConvNet(torch.nn.Module):
         x = F.relu(self.fc1_xd(x))
         x = F.dropout(x, p=0.2, training=self.training)
 
-        # -----MATIJA-----
         # protein embedding
         embedded_xt = self.embedding_xt(target)
 
@@ -96,7 +95,6 @@ class PDC_GINConvNet(torch.nn.Module):
 
         # protein-drug-drug concatenation
         xc = torch.cat((x, xc), 1)
-        # -----MATIJA-----
 
         # add some dense layers
         xc = self.fc1(xc)

@@ -39,7 +39,6 @@ class ESM_GINConvNet(torch.nn.Module):
 
         self.fc1_xd = Linear(dim, output_dim)
 
-        # -----MATIJA-----
         # ESM protein embedding linear layer
         
         # triple convolution
@@ -53,7 +52,6 @@ class ESM_GINConvNet(torch.nn.Module):
         # single convolution
         # self.fc_xt = nn.Linear(320, 128)
         # self.bn_xt = nn.BatchNorm1d(128)
-        # -----MATIJA-----
 
         # combined layers
         self.fc1 = nn.Linear(256, 1024)
@@ -78,7 +76,6 @@ class ESM_GINConvNet(torch.nn.Module):
         x = F.relu(self.fc1_xd(x))
         x = F.dropout(x, p=0.2, training=self.training)
 
-        # -----MATIJA-----
         # ESM Protein embedding linear layer learning
         xt = self.fc_xt(target)
         xt = self.bn_xt(xt)
@@ -91,7 +88,6 @@ class ESM_GINConvNet(torch.nn.Module):
         xt = self.fc_xt3(xt)
         xt = self.bn_xt3(xt)
         xt = self.relu(xt)
-        # -----MATIJA-----
 
         # concat
         xc = torch.cat((x, xt), 1)
