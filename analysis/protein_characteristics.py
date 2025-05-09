@@ -48,7 +48,7 @@ def ProtParam(uniprot_id):
         print('Ext.coef abs: ',  ext_coeff_abs)
         print('Instability index: ', instability_index)
         print("Aliphatic index: ", aliphatic_index)
-        print('GRAVI: ', hydrophaticity)
+        print('GRAVY: ', hydrophaticity)
         
         # You can extract other properties similarly
         # Example:
