@@ -125,7 +125,7 @@ if args.seed is not None:
     torch.backends.cudnn.deterministic = True
     torch.use_deterministic_algorithms(True)
 
-# Dodati mogucnost dodavanja argumenta za model_path!
+# TODO: add model_path as an argument
 if mutation == '':
     model_path = 'trained_models/final_training_model_' + model_st + '_' + dataset + '.model'
 elif mutation == '_mutation':
@@ -163,8 +163,8 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=False)
     test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False)
 
-    combined_data = ConcatDataset([train_data, test_data])
-    combined_loader = DataLoader(combined_data, batch_size=BATCH_SIZE, shuffle=False)
+    # combined_data = ConcatDataset([train_data, test_data])
+    # combined_loader = DataLoader(combined_data, batch_size=BATCH_SIZE, shuffle=False)
 
     # Load pre-trained model
     model = modeling().to(device)
@@ -177,9 +177,15 @@ if __name__ == "__main__":
 
     # Predict for test dataset
     G, P = predicting(model, device, test_loader)
+    
+    histogram_dir = 'images/histograms'
+    os.makedirs(histogram_dir, exist_ok=True)
+    plot_histograms(G, P, data_dir = f'{histogram_dir}/{model_st}_{dataset}{mutation}_histogram.png')
 
     # Save test predictions       
-    output_data_file = 'analysis/predictions/' + model_st + '_' + dataset + mutation + '_test_predictions.csv'
+    output_dir = 'analysis/predictions'
+    os.makedirs(output_dir, exist_ok=True)
+    output_data_file = os.path.join(output_dir, model_st + '_' + dataset + mutation + '_test_predictions.csv')
 
     with open(test_data_file, 'r') as infile, open(output_data_file, 'w', newline='') as outfile:
         reader = csv.reader(infile)
@@ -195,13 +201,3 @@ if __name__ == "__main__":
             row.append(P[i])
             writer.writerow(row)
     print("Predictions written to .csv file successfully.")
-
-# TO-DO:
-# load model - done
-# load dataset - done (implicitly?)
-# predict(dataset) - done (for combined data only!)
-# Optional: histogram, output analysis (confusion matrix?)
-# Optional: number of parameters, inference time?
-# extract embeddings!!! (keract?)
-# find out which embedding corresponds to which protein!
-# save embeddings to davis_442x128.csv and kiba_223x128.csv

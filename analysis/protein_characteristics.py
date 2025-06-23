@@ -13,7 +13,6 @@ from collections import OrderedDict
 
 
 def ProtParam(uniprot_id):
-
     '''
     The aim of this function is to extract protein characteristics, based on their UniProt ID.
 
@@ -160,9 +159,7 @@ def ProtParam_from_sequence(sequence):
 
     return float(molecular_weight), float(theoretical_pI), float(ext_coeff_abs[0]), float(ext_coeff_abs[1]), float(instability_index[0]), float(aliphatic_index[0]), float(hydrophaticity), float(num_acids), float(A_c), float(R_c), float(N_c), float(D_c), float(C_c), float(Q_c), float(E_c), float(G_c), float(H_c), float(I_c), float(L_c), float(K_c), float(M_c), float(F_c), float(P_c), float(S_c), float(T_c), float(W_c), float(Y_c), float(V_c), float(O_c), float(U_c), float(pos), float(neg)
 
-
 def download_GO_for_protein(uniprot_id, output_csv, download_limit = 100):
-
     """
     Using QuickGO API, extracting GO annotations for a specific protein, using its UniProt id
 
@@ -203,7 +200,6 @@ if __name__ == "__main__":
     prot_dirs = ['data/davis/proteins.txt', 'data/kiba/proteins.txt', 'data/davis/new_proteins.json']
     for save_name, prot_dir in zip(save_names, prot_dirs):
         proteins = json.load(open(prot_dir), object_pairs_hook=OrderedDict)
-        prots = []
         columns = ['GeneID', 'Sequence', 'molecular_weight', 'theoretical_pI', 'ext_coeff_abs', 'ext_coeff_abs_reduced_Cys', 'instability_index', 'aliphatic_index', 'hydropathicity', 
                 'num_acids', 'A_c', 'R_c', 'N_c', 'D_c', 'C_c', 'Q_c', 'E_c', 'G_c', 'H_c', 'I_c', 'L_c', 'K_c', 'M_c', 'F_c', 'P_c', 'S_c', 'T_c', 'W_c', 'Y_c', 'V_c', 'O_c', 'U_c', 
                 'pos', 'neg']
@@ -253,6 +249,6 @@ if __name__ == "__main__":
             print(i)
 
         df = pd.DataFrame(data, columns=columns)
-        df.to_csv(f'analysis/interpretability/protein_parameters/{save_name}_proteins_ProtParam.csv', index=False)
-
-        
+        output_dir = 'analysis/interpretability/protein_parameters'
+        os.makedirs(output_dir, exist_ok=True)
+        df.to_csv(f'{output_dir}/{save_name}_proteins_ProtParam.csv', index=False)

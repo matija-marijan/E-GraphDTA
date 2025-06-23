@@ -15,7 +15,6 @@ from models.pdc_vnoc_ginconv import PDC_Vnoc_GINConvNet
 from models.esm_ginconv import ESM_GINConvNet
 from models.fri_ginconv import FRI_GINConvNet
 
-
 import random
 
 datasets = ['davis', 'kiba']
@@ -75,7 +74,7 @@ if args.seed is not None:
     torch.backends.cudnn.deterministic = True
     torch.use_deterministic_algorithms(True)
 
-# Dodati mogucnost dodavanja argumenta za model_path!
+# TODO: add model_path as an argument
 if mutation == '':
     model_path = 'trained_models/final_training_model_' + model_st + '_' + dataset + '.model'
 elif mutation == '_mutation':
@@ -112,8 +111,8 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=False)
     test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False)
 
-    combined_data = ConcatDataset([train_data, test_data])
-    combined_loader = DataLoader(combined_data, batch_size=BATCH_SIZE, shuffle=False)
+    # combined_data = ConcatDataset([train_data, test_data])
+    # combined_loader = DataLoader(combined_data, batch_size=BATCH_SIZE, shuffle=False)
 
     # Load pre-trained model
     model = modeling().to(device)
@@ -141,7 +140,7 @@ if __name__ == "__main__":
     # Register the hook to the target layer
     hook_handle = getattr(model, target_layer_name).register_forward_hook(hook)
 
-    # Predict for combined dataset to extract embeddings
+    # Predict for test dataset to extract embeddings
     with torch.no_grad():
         for data in test_loader:
             data = data.to(device)
@@ -152,14 +151,6 @@ if __name__ == "__main__":
 
     # Save embeddings to a CSV file
     embeddings_np = torch.cat(embeddings).numpy()
-    np.savetxt(f'analysis/interpretability/protein_embeddings/{dataset}{mutation}_{model_st}_embeddings.csv', embeddings_np, delimiter=',')
-
-# TO-DO:
-# load model - done
-# load dataset - done (implicitly?)
-# predict(dataset) - done (for combined data only!)
-# Optional: histogram, output analysis (confusion matrix?)
-# Optional: number of parameters, inference time?
-# extract embeddings!!! (keract?)
-# find out which embedding corresponds to which protein!
-# save embeddings to davis_442x128.csv and kiba_223x128.csv
+    output_dir = 'analysis/interpretability/protein_embeddings'
+    os.makedirs(output_dir, exist_ok=True)
+    np.savetxt(f'{output_dir}/{dataset}{mutation}_{model_st}_embeddings.csv', embeddings_np, delimiter=',')
