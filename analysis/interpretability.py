@@ -13,13 +13,6 @@ from models.pdc_vnoc_ginconv import PDC_Vnoc_GINConvNet
 from models.esm_ginconv import ESM_GINConvNet
 from models.fri_ginconv import FRI_GINConvNet
 
-from models.flag.flag_ginconv import Flag_GINConvNet
-from models.flag.flag_pdc_ginconv import Flag_PDC_GINConvNet
-from models.flag.flag_vnoc_ginconv import Flag_Vnoc_GINConvNet
-from models.flag.flag_pdc_vnoc_ginconv import Flag_PDC_Vnoc_GINConvNet
-from models.flag.flag_esm_ginconv import Flag_ESM_GINConvNet
-from models.flag.flag_fri_ginconv import Flag_FRI_GINConvNet
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -46,23 +39,14 @@ all_models = {
     'PDC_Vnoc_GINConvNet': PDC_Vnoc_GINConvNet
 }
 
-flag_models = {
-    'Flag_GINConvNet': Flag_GINConvNet, 
-    'Flag_PDC_GINConvNet': Flag_PDC_GINConvNet, 
-    'Flag_Vnoc_GINConvNet': Flag_Vnoc_GINConvNet, 
-    'Flag_ESM_GINConvNet': Flag_ESM_GINConvNet, 
-    'Flag_FRI_GINConvNet': Flag_FRI_GINConvNet, 
-    'Flag_PDC_Vnoc_GINConvNet': Flag_PDC_Vnoc_GINConvNet
-}
-
 parser = argparse.ArgumentParser(description="Run a specific model on a specific dataset.")
 
 parser.add_argument('-d', '--dataset', type=str, choices=datasets, required=True, 
                     help="Dataset name: 'davis' or 'kiba'.")
 parser.add_argument('-m', '--model', type=str, choices=list(all_models.keys()), required=True, 
                     help="Model name. Choose from: " + ", ".join(all_models.keys()) + ".")
-parser.add_argument('-x', '--mutation', type=int, default = 0, choices = {0, 1, 2},
-                    help="Flag for including protein sequence mutations (1), and protein phosphorylation flags (2) (default: 0).")
+parser.add_argument('-x', '--mutation', action='store_true', default=False,
+                    help="Flag for including protein sequence mutations for the Davis dataset (default: False).")
 
 args = parser.parse_args()
 
@@ -71,15 +55,8 @@ model_st = modeling.__name__
 
 dataset = args.dataset
 mutation = ''
-if dataset == 'davis':
-    if args.mutation == 0:
-        mutation = ''
-    elif args.mutation == 1:
-        mutation = '_mutation'
-    elif args.mutation == 2:
-        mutation = '_flag'
-        modeling = flag_models['Flag_' + args.model]
-        model_st = modeling.__name__
+if dataset == 'davis' and args.mutation:
+    mutation = '_mutation'
 
 print(f"Mutation = {args.mutation}")
 

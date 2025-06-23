@@ -15,14 +15,13 @@ import argparse
 
 parser = argparse.ArgumentParser(description="Run a specific model on a specific dataset.")
 
-parser.add_argument('-x', '--mutation', type=int, default = 0, choices = {0, 1},
-                    help="Flag for including protein sequence mutations (1) for the Davis dataset (default: 0).")  
+parser.add_argument('-x', '--mutation', action='store_true', default=False,
+                    help="Flag for including protein sequence mutations for the Davis dataset (default: False).")
 
 args = parser.parse_args()
 
-if args.mutation == 0:
-    mutation = ''
-elif args.mutation == 1:
+mutation = ''
+if args.mutation:
     mutation = '_mutation'
 
 model_config = 'preprocessing/FRI/trained_models/model_config.json'
