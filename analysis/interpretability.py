@@ -68,8 +68,8 @@ if __name__ == "__main__":
     train_fold = [ee for e in train_fold for ee in e ]
     test_fold = json.load(open(fpath + "folds/test_fold_setting1.txt"))
 
-    param_path = f'analysis/interpretability/new_protein_parameters/{dataset}{mutation}_proteins_ProtParam.csv'
-    emb_path = f'analysis/interpretability/protein_embeddings/test/{dataset}{mutation}_{model_st}_embeddings.csv'
+    param_path = f'analysis/interpretability/protein_parameters/{dataset}{mutation}_proteins_ProtParam.csv'
+    emb_path = f'analysis/interpretability/protein_embeddings/{dataset}{mutation}_{model_st}_embeddings.csv'
 
     protparams_df = pd.read_csv(param_path)
     # print(protparams_df.columns)
@@ -237,20 +237,8 @@ if __name__ == "__main__":
     # plt.xlim(-1, 1)
     # plt.ylim(-1, 1)
     # plt.show()
-    plt.savefig(f'analysis/interpretability/{model_st}_{dataset}{mutation}_CCA.png', dpi=300, bbox_inches='tight')
-    # plt.savefig(f'analysis/interpretability/{model_st}_{dataset}{mutation}_CCA_annot.png', dpi=100)
+    os.makedirs('images/interpretability/', exist_ok=True)
+    plt.savefig(f'images/interpretability/{model_st}_{dataset}{mutation}_CCA.png', dpi=300, bbox_inches='tight')
+    # plt.savefig(f'images/interpretability/{model_st}_{dataset}{mutation}_CCA_annot.png', dpi=100)
 
-
-# TO-DO:
-# extract ProtParam - DONE
-# extract GO terms - standby
-# read .pt from from create_data to predict done?
-# extract embeddings (save to new file if datadir doesnt exist) done
-# extract from specific layer done
-# read embedding matrix
-# read prot param matrix
-# cross-correlation emb/param
-# cross-correlation emb/go -> pay attention to mutations!
-# figure out what to do with PDC / PDC_Vnoc embeddings -> skip? -> average?
-
-    
+# TODO: Streamline the code to improve readability and efficiency.

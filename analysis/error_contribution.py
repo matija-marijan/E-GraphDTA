@@ -120,6 +120,8 @@ if __name__ == "__main__":
 
     top_10_drug_mae = drug_mae.tail(10)
     top_10_drug_mae = top_10_drug_mae['compound_iso_smiles'].tolist()
+
+    os.makedirs('analysis/predictions/annotations/', exist_ok=True)
     # if ((not os.path.isfile(f'analysis/predictions/annotations/{model_st}_{dataset}{mutation}_drugs.json'))):
     with open(f'analysis/predictions/annotations/{model_st}_{dataset}{mutation}_drugs.json', 'w') as f:
         json.dump(top_10_drug_mae, f, indent=4)
@@ -178,14 +180,7 @@ if __name__ == "__main__":
     plt.suptitle(f'{model_st} Prediction Error for {dataset}{mutation} Test Data', fontsize=14)
     plt.tight_layout()
     # plt.show()
+    os.makedirs('images/error contribution/', exist_ok=True)
     plt.savefig(f'images/error contribution/{model_st}_{dataset}{mutation}_errors.png', dpi=500)
 
-# TO-DO:
-# load model - done
-# load dataset - done (implicitly?)
-# predict(dataset) - done (for combined data only!)
-# Optional: histogram, output analysis (confusion matrix?)
-# Optional: number of parameters, inference time?
-# extract embeddings!!! (keract?)
-# find out which embedding corresponds to which protein!
-# save embeddings to davis_442x128.csv and kiba_223x128.csv
+# TODO: Streamline the code to improve readability and efficiency.
