@@ -74,7 +74,7 @@ Before training a prediction model and analyzing its results, the input datasets
   ```
 
 Optional arguments:
---mutation/-x: Flag for including protein sequence mutations in the Davis dataset {0 (default),  1}.
+--mutation/-x: Flag for including protein sequence mutations in the Davis dataset {False (default)}.
   
 These scripts return train and test .csv files in the data/ folder, as well as train and test .pt files in the data/processed, which are to be used during training.
   
@@ -84,30 +84,30 @@ A prediction model can be trained using ```python training.py``` with the follow
 2. --dataset/-d: Dataset chosen for training {'davis', 'kiba'}.
 3. --cuda/-c: CUDA device index (default: 0).
 4. --seed/-s: Random seed for reproducibility.
-5. --mutation/-x: Flag for including protein sequence mutations in the Davis dataset {0 (default), 1}
+5. --mutation/-x: Flag for including protein sequence mutations in the Davis dataset {False (default)}.
 
 Example use:
   ```
-  python training.py -d davis -m PDC_Vnoc_GINConvNet -s 0 -x 1
+  python training.py -d davis -m PDC_Vnoc_GINConvNet -s 0
   ```
-This runs the training for the PDC-Vnoc model variant on the Davis dataset with protein sequence mutations accounted for, with 0 used as a random seed for reproducibility. The training is performed on 80% of the dataset, while the performance is evaluated on the testing 20% of data.
+This runs the training for the PDC-Vnoc model variant on the Davis dataset, with 0 used as a random seed for reproducibility. The training and evaluation is performed using a predefined 5:1 data split.
 
 The training script saves the best overall model checkpoint with the lowest MSE on the testing data, and continually outputs MSE on the training data, and MSE, RMSE, Spearman correlation, and Pearson correlation values on the testing data. It also calculates the Concordance Index on the test data for the best overall model at the end of training.
 
 ### Validation
-A prediction model can also be trained using a three-way dataset split with the same 80/20 split for training and testing, where 20% of the training set is used independently for validation, while the remaining 80% is used for training, using the following command with the same arguments as listed above:
+A prediction model can also be trained using a three-way dataset split with the same 5:1 split for training and testing, where 20% of the training set is used independently for validation, while the remaining 80% is used for training, using the following command with the same arguments as listed above:
 ```
 python training_validation.py -d davis -m ESM_GINConvNet
 ```
 The validation script saves the best overall model checkpoint with the lowest MSE on the testing data, and continually outputs MSE on validation data, and MSE, RMSE, Spearman correlation, and Pearson correlation values on the testing data. It also calculates the Concordance Index on the test data for the best overall model at the end of training. 
 
 ## 3. Analysis
-The analysis/ folder contains various scripts for post-hoc analysis options:
+The analysis/ folder contains various scripts for post hoc analysis:
 + Perform inference on a trained model using testing data:
   ```
   python -m analysis.prediction -d kiba -m Vnoc_GINConvNet -s 0
   ```
-  This code saves the results in .csv format in the analysis/predictions/ folder. Uses identical arguments as ```training.py``` for dataset, model, CUDA device, random seed, and mutation flag selection.
+  This code saves the results in .csv format in the analysis/predictions/ folder. It uses identical arguments as ```training.py``` for dataset, model, CUDA device, random seed, and mutation flag selection.
 + Calculate total median absolute error contribution of drugs and proteins, for calculated predictions:
   ```
   python -m analysis.error_contribution -d davis -m FRI_GINConvNet
@@ -129,6 +129,6 @@ The analysis/ folder contains various scripts for post-hoc analysis options:
 
   Perform canonical correlation analysis between the extracted protein embeddings and parameters:
   ```
-  python -m analysis.interpretability -d davis -m ESM_GINConvNet -x 1
+  python -m analysis.interpretability -d davis -m ESM_GINConvNet
   ```
   This saves a 2-dimensional plot of the CCA projections and singular vectors of the embeddings and parameters, to a .png file in the analysis/interpretability/ folder. This script uses arguments for dataset, model, and protein mutation flag selection.
