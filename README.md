@@ -36,15 +36,15 @@ pip install fair-esm
 
 ## Proposed Models
 All of the proposed models, along with the original GraphDTA models can be found in the models/ folder. All proposed models are built on top of the GraphDTA GIN model variant, and include:
-+ **PDC** (Protein-Drug Concatenation): Incorporates drug information in the protein representation learning channel, by concatenating the drug latent vector to each amino acid embedding latent vector:
++ **PDC** (Protein-Drug Concatenation): Incorporates drug information in the protein representation learning channel by concatenating the drug latent vector to each amino acid embedding latent vector:
   <p align="center">
   <img src="images/pdc.png" width="300">
   </p>
-+ **Vnoc** (Transposed Input Convolution): Transposes the input protein embedding matrix, and performes convolution along the original protein sequence direction:
++ **Vnoc** (Transposed Input Convolution): Transposes the input protein embedding matrix, and performes convolution along the length of the sequence:
   <p align="center">
   <img src="images/vnoc_new.png" width="500">
   </p>
-+ **PDC-Vnoc** (Combined Representation): Includes both innovations from the PDC and Vnoc models.
++ **PDC-Vnoc** (Combined Representation): Includes both modifications from the PDC and Vnoc models.
 + **ESM**: Utilizes precomputed PLM-based protein embeddings extracted during ESM preprocessing.
 + **FRI**: Utilizes precomputed PLM-based protein embeddings extracted during DeepFRI preprocessing.
 
