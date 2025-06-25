@@ -131,4 +131,4 @@ The analysis/ folder contains various scripts for post hoc analysis:
   ```
   python -m analysis.interpretability -d davis -m ESM_GINConvNet
   ```
-  This saves a 2-dimensional plot of the CCA projections and singular vectors of the embeddings and parameters, to a .png file in the images/interpretability/ folder. This script uses arguments for dataset, model, and protein mutation flag selection.
+  This performs CCA and plots 2-dimensional plot of the CCA projections and singular vectors of the embeddings and parameters, to a .png file in the images/interpretability/ folder. This script uses arguments for dataset, model, protein mutation flag selection. Other arguments include flag to average embeddings per protein, flag to save plots, and flag to include text annotations. Optionally, by choosing a specific protein parameter, the script performs correlation analysis between the protein parameter and its most strongly correlated latent variable. A specific latent variable can be passed as an argument to perform specific analyses.
