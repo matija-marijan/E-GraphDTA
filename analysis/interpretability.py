@@ -201,10 +201,10 @@ plt.ylim(-1.25, 1.25)
 
 if args.save:
     os.makedirs('images/interpretability/', exist_ok=True)
-    # if args.text:
-    #     plt.savefig(f'images/interpretability/{model_st}_{dataset}{mutation}_CCA_annot.png', dpi=100)
-    # else:
-    #     plt.savefig(f'images/interpretability/{model_st}_{dataset}{mutation}_CCA.png', dpi=300, bbox_inches='tight')
+    if args.text:
+        plt.savefig(f'images/interpretability/{model_st}_{dataset}{mutation}_CCA_annot.png', dpi=100)
+    else:
+        plt.savefig(f'images/interpretability/{model_st}_{dataset}{mutation}_CCA.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 if args.parameter:
@@ -225,7 +225,7 @@ if args.parameter:
         best_corr = correlations[best_embedding]
 
         embedding = best_embedding
-        print(f"Embedding with highest correlation to {parameter}: {best_embedding} (correlation = {best_corr:.3f})")
+        print(f"\nEmbedding with highest correlation to {parameter}: {best_embedding} (correlation = {best_corr:.3f})")
 
     x_axis = merged_df[parameter]
     y_axis = merged_df[embedding]
@@ -239,13 +239,20 @@ if args.parameter:
     plt.ylabel(parameter)
     plt.title(f'{parameter} vs {embedding} activation')
     plt.grid(True)
-    plt.tight_layout()
+
+    # Use scientific notation for axes if values are very big/small
+    ax = plt.gca()
+    ax.ticklabel_format(style='sci', axis='both', scilimits=(-3, 3))
+    
     # Calculate and print correlation coefficient
     corr = np.corrcoef(x_axis, y_axis)[0, 1]
-    plt.text(0.95, 0.95, f'Pearson correlation: {corr:.2f}', transform=plt.gca().transAxes, fontsize=12, verticalalignment='top', horizontalalignment='right', bbox=dict(facecolor='white', alpha=0.7))
-    # plt.text(0.05, 0.95, f'Pearson correlation: {corr:.2f}', transform=plt.gca().transAxes, fontsize=12, verticalalignment='top', horizontalalignment='left', bbox=dict(facecolor='white', alpha=0.7))
+    if corr < 0:
+        plt.text(0.95, 0.95, f'Pearson correlation: {corr:.2f}', transform=plt.gca().transAxes, fontsize=12, verticalalignment='top', horizontalalignment='right', bbox=dict(facecolor='white', alpha=0.7))
+    else:
+        plt.text(0.05, 0.95, f'Pearson correlation: {corr:.2f}', transform=plt.gca().transAxes, fontsize=12, verticalalignment='top', horizontalalignment='left', bbox=dict(facecolor='white', alpha=0.7))
 
     if args.save:
         os.makedirs('images/interpretability/activations/', exist_ok=True)
         plt.savefig(f'images/interpretability/activations/{model_st}_{dataset}{mutation}_{parameter}_{embedding}_activation.png', dpi=300, bbox_inches='tight')
+    plt.tight_layout()
     plt.show()
