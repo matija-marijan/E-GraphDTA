@@ -163,7 +163,7 @@ if __name__ == "__main__":
         axs[0].annotate(drug_keys[-i - 1], (len(drug_mae) + i, drug_mae['mae'].iloc[i]), fontsize=8,
                         xytext=(-10, 0), textcoords = 'offset points', ha='right')
     axs[0].set_xlabel('Drug', fontsize=12)
-    axs[0].set_ylabel('Median of Absolute Errors for Affinity Prediction', fontsize=12)
+    axs[0].set_ylabel('Median Absolute Error for Affinity Prediction', fontsize=12)
     # axs[0].set_title(f'{model_st} Prediction Error for {dataset}{mutation} Test Data')
     axs[0].set_xticks([])
 
@@ -177,10 +177,10 @@ if __name__ == "__main__":
     # axs[1].set_title(f'{model_st} Prediction Error for {dataset}{mutation} Test Data')
     axs[1].set_xticks([])
     
-    plt.suptitle(f'{model_st} Prediction Error for {dataset}{mutation} Test Data', fontsize=14)
+    plt.suptitle(f'{model_st} Prediction Error for {dataset}{mutation} dataset', fontsize=14)
     plt.tight_layout()
     # plt.show()
     os.makedirs('images/error contribution/', exist_ok=True)
-    plt.savefig(f'images/error contribution/{model_st}_{dataset}{mutation}_errors.png', dpi=500)
+    plt.savefig(f'images/error contribution/{model_st}_{dataset}{mutation}_errors.png', dpi=300)
 
 # TODO: Streamline the code to improve readability and efficiency.
