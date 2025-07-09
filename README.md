@@ -1,5 +1,5 @@
 # E-GraphDTA: Enhanced protein representations improve drug–target binding affinity prediction
-Implementation of five novel protein representation models on top of GraphDTA's drug graph neural network processing methods for predicting the binding affinity of drug-target pairs. The proposed methods revolve around three key concepts of protein sequence representation and interpretation:
+Implementation of five novel protein representation models on top of GraphDTA's drug graph neural network processing methods for predicting the binding affinity of drug–target pairs. The proposed methods revolve around three key concepts of protein sequence representation and interpretation:
 1. Incorporating information about the drug into the target representation,
 2. Redefining protein embedding convolution layers,
 3. Predicting protein representations using protein language models, which include [Evolutionary Scale Modeling](https://github.com/facebookresearch/esm) and [Functional Residue Identification](https://github.com/flatironinstitute/DeepFRI).
@@ -31,7 +31,7 @@ pip install fair-esm
 # Resources
 
 ## Datasets
-+ data/davis/, data/kiba/ contain the Davis and KIBA drug-target interaction datasets. The files were downloaded from [DeepDTA](https://github.com/hkmztrk/DeepDTA/tree/master/data).
++ data/davis/, data/kiba/ contain the Davis and KIBA drug–target interaction datasets. The files were downloaded from [DeepDTA](https://github.com/hkmztrk/DeepDTA/tree/master/data).
 + data/davis/new_proteins.json contains the updated version of the protein sequences from the Davis dataset, which have been accounted for mutations. This file was created with data downloaded from [DTITR](https://github.com/larngroup/DTITR/blob/main/data/davis/dataset/davis_dataset_processed.csv).
 
 ## Proposed Models
