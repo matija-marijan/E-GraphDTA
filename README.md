@@ -11,7 +11,7 @@ The proposed methods revolve around three key concepts of protein sequence repre
 </p> 
 
 # Installation
-All environments and source codes were created and tested in a Linux environment, running on Ubuntu 22.04, and CUDA version 11.8.
+All environments and source codes were created and tested in a Linux environment, running on Ubuntu 22.04, with CUDA version 11.8.
 <br>
 All scripts and model architectures can be downloaded locally using ```git clone https://github.com/matija-marijan/E-GraphDTA.git```
 
